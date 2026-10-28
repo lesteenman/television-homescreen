@@ -1,6 +1,5 @@
 package me.steenman.tvlauncher.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -67,7 +66,7 @@ fun HomeScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(BackgroundGradient),
+            .gradientBackground(),
     ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(COLUMNS),

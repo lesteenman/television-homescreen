@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Builds and installs the debug launcher, then opens it.
-#   scripts/deploy.sh            -> kitchen TV (wireless adb)
-#   scripts/deploy.sh emulator   -> Google TV emulator (started if needed)
+# Builds and installs the launcher, then opens it.
+#   scripts/deploy.sh                      -> debug build on the kitchen TV (wireless adb)
+#   scripts/deploy.sh emulator             -> debug build on the Google TV emulator (started if needed)
+#   scripts/deploy.sh tv --release         -> release build (needs keystore.properties)
+# Debug and release are signed differently: switching on a device needs an uninstall first.
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
 
@@ -12,6 +14,8 @@ case "${1:-tv}" in
 esac
 
 cd "$REPO_ROOT"
-ANDROID_SERIAL="$serial" ./gradlew -q installDebug
+variant="Debug"
+[[ "${2:-}" == "--release" ]] && variant="Release"
+ANDROID_SERIAL="$serial" ./gradlew -q "install$variant"
 "$ADB" -s "$serial" shell am start -n "$APP_ID/.MainActivity" >/dev/null
 echo "Installed and started on $serial"

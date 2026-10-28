@@ -53,13 +53,28 @@ A third-party app can't declare an intent-filter priority above 0, so our HOME a
 - The favorites row is hidden when empty. On first run it is pre-seeded with nothing; the user picks.
 
 ### D5: Visuals
-- A full-screen vertical/diagonal gradient drawn with a Compose `Brush` (two to three dark tones). No images, so there's nothing to load.
+- A full-screen diagonal gradient in three dark tones. It is rendered once into a 480×270 bitmap and stretched over the screen, not drawn with a live `Brush` shader (see D8).
 - The clock sits top-right in the locale's 24-hour or 12-hour format, updated every minute (`ACTION_TIME_TICK`).
 - Layout: clock header → favorites row → "All apps" grid of 16:9 banner cards. Overscan-safe margins of 48 dp horizontal and 27 dp vertical.
 
 ### D6: Back and HOME behaviour inside the launcher
 - BACK on the home screen does nothing and stays put; it never exits to the stock launcher.
 - HOME while already home scrolls to the top and focuses the first favorite.
+
+### D8: Performance on the Chromecast HD
+- The TV runs the **release** build: R8 minified, non-debuggable, signed with a local key (`docs/release-signing.md`), and including the Compose libraries' baseline profiles.
+- Loaded app entries (label and banner) are cached per component and only invalidated by package broadcasts. Returning home therefore produces an equal list, with no banner reloads and no recomposition.
+- The background gradient is pre-rendered (D5). Drawing a full-screen gradient shader every frame was the main cost on this GPU.
+- Measured on the kitchen TV (3 HOME returns plus a D-pad tour, `dumpsys gfxinfo`):
+
+| Build | Median frame | p95 | p99 | Janky |
+|---|---|---|---|---|
+| Debug | 69 ms | 150 ms | 250 ms | 53% |
+| Release, reload cached | 61 ms | 73 ms | 85 ms | 50% |
+| + AOT compiled (`speed-profile`) | 61 ms | 69 ms | 73 ms | 49% |
+| + pre-rendered gradient | 24 ms | 34 ms | 48 ms | 4% |
+
+- Possible next step: a generated Baseline Profile for our own code, and an A/B test of the cards' focus scale.
 
 ### D7: Dev loop
 - Emulator: `system-images;android-34;google-tv;arm64-v8a`, AVD "gtv-34" with a 1080p TV profile, used for UI work. Takeover experiments happen only on the real device, because the emulator's launcher and packages differ from production.

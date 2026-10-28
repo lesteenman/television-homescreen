@@ -30,11 +30,11 @@ class MainActivity : ComponentActivity() {
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val packageName = intent.data?.schemeSpecificPart
-            if (intent.action == Intent.ACTION_PACKAGE_FULLY_REMOVED && packageName != null) {
+            val packageName = intent.data?.schemeSpecificPart ?: return
+            if (intent.action == Intent.ACTION_PACKAGE_FULLY_REMOVED) {
                 viewModel.onPackageFullyRemoved(packageName)
             } else {
-                viewModel.refresh()
+                viewModel.onPackageChanged(packageName)
             }
         }
     }

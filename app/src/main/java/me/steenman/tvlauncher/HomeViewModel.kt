@@ -51,8 +51,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun moveFavorite(app: LauncherApp, offset: Int) =
         viewModelScope.launch { favoritesStore.move(app.key, offset) }
 
+    fun onPackageChanged(packageName: String) {
+        repository.invalidate(packageName)
+        refresh()
+    }
+
     fun onPackageFullyRemoved(packageName: String) {
         viewModelScope.launch { favoritesStore.removePackage(packageName) }
-        refresh()
+        onPackageChanged(packageName)
     }
 }

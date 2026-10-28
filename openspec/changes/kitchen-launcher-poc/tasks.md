@@ -38,3 +38,11 @@
 - [x] 4.6 Check voice button, Settings access and screensaver still work under B; record findings — voice search, Assistant, Settings OK; screensaver configured but not observed
 - [x] 4.7 If B is unstable: implement accessibility watchdog service (window-state events for launcherx HomeActivity → start our launcher), `scripts/takeover-c.sh` to enable it — n/a so far: B is stable through 10 HOME presses and a reboot
 - [ ] 4.8 Run 24-hour stickiness check for the chosen approach and document the final state and undo in design.md
+
+## 5. Performance
+
+- [x] 5.1 Measure frame times on the TV with `dumpsys gfxinfo` (baseline: debug build)
+- [x] 5.2 Cache loaded apps; invalidate only on package broadcasts
+- [x] 5.3 Add a minified, locally signed release build (`scripts/deploy.sh tv --release`)
+- [x] 5.4 Replace the live gradient shader with a pre-rendered bitmap
+- [x] 5.5 Re-measure on the TV and record results in design.md (D8)

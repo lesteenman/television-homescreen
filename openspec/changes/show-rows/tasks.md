@@ -2,12 +2,13 @@
 
 - [ ] 1.1 (Disney+ and Spotify done; Netflix needs someone watching the TV) For Netflix, Disney+ and Spotify, open a known show with `adb shell am start -a android.intent.action.VIEW -d <link> -p <package>` from a cold start and a warm start; record in design.md D4 whether the profile picker appears and whether the app continues to the show afterwards
 - [x] 1.2 Record the working link format per app in design.md D3
+- [ ] 1.3 Check Videoland on the TV: its package name, and whether `v2.videoland.com` links open the show
 
 ## 2. Config
 
 - [x] 2.1 Decide hosting for `shows.json`: bundled in the APK for now (D1)
 - [x] 2.2 Config model and parser (version check, unknown fields ignored) with unit tests
-- [x] 2.3 Load `assets/shows.json` off the main thread; placeholder shows until the real list is known
+- [x] 2.3 Load `assets/shows.json` off the main thread, with the real list (D3a)
 - [x] 2.4 Add the `INTERNET` permission (already added by `weather-forecast`)
 
 ## 3. Artwork

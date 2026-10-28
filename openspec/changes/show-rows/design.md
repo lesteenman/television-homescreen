@@ -51,6 +51,11 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
   - Netflix (`com.netflix.ninja`): `https://www.netflix.com/title/<id>` (also `/watch/<id>`, and the `nflx://` scheme).
   - Disney+ (`com.disney.disneyplus`): any `https://www.disneyplus.com/...` URL resolves, but only the current form opens the show: `https://www.disneyplus.com/browse/entity-<uuid>`. The old `/series/<slug>/<id>` form lands on the Disney+ home page. Copy links from the website's address bar after it has redirected.
   - Spotify (`com.spotify.tv.android`): `spotify:<type>:<id>` or `https://open.spotify.com/<type>/<id>` for album, artist, playlist, show and more.
+  - Videoland (`nl.rtl.videoland.v2`, from its Play Store listing): web pages are `https://v2.videoland.com/<slug>-p_<id>`. Whether the TV app handles those links, and whether that is its package on this TV, is still to check; until then a tile that can't be resolved just opens the app, and a wrong package hides the row.
+
+### D3a: Where the show list comes from (2026-10-28)
+- Links: JustWatch's Dutch pages (`justwatch.com/nl/tv-series/<slug>`) link to each service's own page, which gives Netflix title IDs, Disney+ entity links and Videoland page links for the Dutch catalogue. Netflix pages show nothing without JavaScript, so their IDs are taken from JustWatch unchecked.
+- Artwork: TMDB backdrops at `https://image.tmdb.org/t/p/w780/<file>.jpg`, picked by hand from the show's backdrops page (`themoviedb.org/tv/<id>/images/backdrops`). Versions with the show's title in the image are preferred, so they're easy to recognise.
 
 ### D4: Profiles can't be chosen from a deep link
 - No app takes a profile in its link. Measured on the kitchen TV, 2026-10-28:
@@ -99,4 +104,4 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 ## Open Questions
 
 - Netflix cold and warm start behaviour (D4), which needs someone looking at the TV.
-- Which shows per app to start with. v1 ships placeholders until the real list is known.
+- Videoland's package and link support on the kitchen TV (D3).

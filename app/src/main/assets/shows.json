@@ -4,27 +4,60 @@
     {
       "app": "com.netflix.ninja",
       "shows": [
-        { "title": "Stranger Things", "link": "https://www.netflix.com/title/80057281" },
-        { "title": "Wednesday", "link": "https://www.netflix.com/title/81231974" }
+        {
+          "title": "Peter Rabbit",
+          "link": "https://www.netflix.com/title/81006960",
+          "image": "https://image.tmdb.org/t/p/w780/36MwBWUBwWa61ndbSXGqz7dHYqF.jpg"
+        },
+        {
+          "title": "Gabby's Dollhouse",
+          "link": "https://www.netflix.com/title/81009946",
+          "image": "https://image.tmdb.org/t/p/w780/lyLvpLsC2WzBFZm2cIEn3VgKwEf.jpg"
+        },
+        {
+          "title": "The Smurfs",
+          "link": "https://www.netflix.com/title/81330960",
+          "image": "https://image.tmdb.org/t/p/w780/z53n5axcVL2cp4Ir8OpM0eAduba.jpg"
+        },
+        {
+          "title": "PAW Patrol",
+          "link": "https://www.netflix.com/title/80026226",
+          "image": "https://image.tmdb.org/t/p/w780/8HXkgUBO5OF8ZK9XbY69RM4S5rv.jpg"
+        }
       ]
     },
     {
       "app": "com.disney.disneyplus",
       "shows": [
         {
-          "title": "The Mandalorian",
-          "link": "https://www.disneyplus.com/browse/entity-422f6dcc-226f-44e7-98d4-22de69b31cf3",
-          "image": "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/1ad30d58-1079-41ee-bd75-8020a34e0ccb/compose?aspectRatio=1.78&format=webp&width=1200"
+          "title": "Spidey and His Amazing Friends",
+          "link": "https://www.disneyplus.com/browse/entity-cc992c16-e126-4a2b-a039-0b1e7106b727",
+          "image": "https://image.tmdb.org/t/p/w780/etO5jDS5WgR4Y1lTyXhQcilJ6u2.jpg"
+        },
+        {
+          "title": "Bluey",
+          "link": "https://www.disneyplus.com/browse/entity-e878689c-487f-4041-bd45-cc4551f0a2e5",
+          "image": "https://image.tmdb.org/t/p/w780/9p4pNoGcuyCfHcGWKNrTopqMWtq.jpg"
         }
       ]
     },
     {
-      "app": "com.spotify.tv.android",
+      "app": "nl.rtl.videoland.v2",
       "shows": [
         {
-          "title": "Today's Top Hits",
-          "link": "spotify:playlist:37i9dQZF1DXcBWIGoYBM5M",
-          "image": "https://i.scdn.co/image/ab67706f00000002e8ccdd567fff6a597b87586b"
+          "title": "Dora and Friends",
+          "link": "https://v2.videoland.com/dora-and-friends-p_365",
+          "image": "https://image.tmdb.org/t/p/w780/twesBvM3jIvKLwqnJxJTpEDV21q.jpg"
+        },
+        {
+          "title": "Dora the Explorer",
+          "link": "https://v2.videoland.com/dora-the-explorer-p_128",
+          "image": "https://image.tmdb.org/t/p/w780/iaJNOSpEQgU4yePsbcC6yxneRNF.jpg"
+        },
+        {
+          "title": "Go, Diego, Go!",
+          "link": "https://v2.videoland.com/go-diego-go-p_4183",
+          "image": "https://image.tmdb.org/t/p/w780/p7Y6IPzPRkZ4oHU0D8DOIIis70a.jpg"
         }
       ]
     }

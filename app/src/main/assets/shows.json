@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "app": "com.netflix.ninja",
+      "shows": [
+        { "title": "Stranger Things", "link": "https://www.netflix.com/title/80057281" },
+        { "title": "Wednesday", "link": "https://www.netflix.com/title/81231974" }
+      ]
+    },
+    {
+      "app": "com.disney.disneyplus",
+      "shows": [
+        {
+          "title": "The Mandalorian",
+          "link": "https://www.disneyplus.com/browse/entity-422f6dcc-226f-44e7-98d4-22de69b31cf3",
+          "image": "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/1ad30d58-1079-41ee-bd75-8020a34e0ccb/compose?aspectRatio=1.78&format=webp&width=1200"
+        }
+      ]
+    },
+    {
+      "app": "com.spotify.tv.android",
+      "shows": [
+        {
+          "title": "Today's Top Hits",
+          "link": "spotify:playlist:37i9dQZF1DXcBWIGoYBM5M",
+          "image": "https://i.scdn.co/image/ab67706f00000002e8ccdd567fff6a597b87586b"
+        }
+      ]
+    }
+  ]
+}

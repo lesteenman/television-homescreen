@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "app": "com.google.android.youtube.tv",
+      "shows": [
+        {
+          "title": "Big Buck Bunny",
+          "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+          "image": "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg"
+        },
+        { "title": "Title-only tile", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
+        {
+          "title": "Unsupported link",
+          "link": "https://example.invalid/falls-back-to-the-app",
+          "image": "https://i.scdn.co/image/ab67706f00000002e8ccdd567fff6a597b87586b"
+        },
+        { "title": "Show 4", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
+        { "title": "Show 5", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
+        { "title": "Show 6", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" }
+      ]
+    }
+  ]
+}

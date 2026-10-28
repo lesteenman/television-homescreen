@@ -80,6 +80,13 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 - Only bitmaps at display size, the same as banners: no shaders, no autoplay, no animations beyond the standard card focus.
 - Config and artwork loading happen off the main thread. The UI state for show rows only changes when the config or the artwork actually changes, keeping the "no recomposition on return home" behaviour.
 - Expected memory: about 230 KB per show tile, so 30 shows is about 7 MB.
+- Emulator A/B, 2026-10-28: the same release build without show rows and with a YouTube row of 6 shows, 3 runs each of 3 HOME returns plus a D-pad tour. Without: median 17 ms, p95 19 ms, janky 3.0–3.5%. With: median 17 ms, p95 18–19 ms, janky 2.4–2.8%. No measurable difference. The TV run is still to do.
+
+### D8: Implementation notes
+- `app/src/debug/assets/shows.json` overrides the real list in debug builds with a YouTube row (artwork, a title-only tile, a link YouTube can't handle, and enough shows to scroll), so the emulator, which has no Netflix, Disney+ or Spotify, has something to show. Release builds use `app/src/main/assets/shows.json`.
+- Each row is a `LazyRow` inside a full-width grid item, with tiles exactly as wide as a grid column. It reaches into the grid's side margins, so a focused tile scrolled to the edge isn't clipped.
+- `showIntent()` resolves the deep link against the row's package first; when nothing in the app handles it, the tile opens the app.
+- The long-press menu on a row's app tile works as on other tiles; "Remove from favorites" there removes the hidden favorite.
 
 ## Risks / Trade-offs
 

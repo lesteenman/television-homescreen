@@ -33,9 +33,11 @@ import androidx.tv.material3.Text
 import me.steenman.tvlauncher.HomeUiState
 import me.steenman.tvlauncher.R
 import me.steenman.tvlauncher.data.LauncherApp
+import me.steenman.tvlauncher.data.shows.Show
 import me.steenman.tvlauncher.data.weather.Forecast
 
 private const val COLUMNS = 5
+private val TileSpacing = 20.dp
 
 // Overscan-safe margins for 1080p TVs.
 private val SafeHorizontal = 48.dp
@@ -47,6 +49,7 @@ fun HomeScreen(
     weather: Forecast?,
     resetSignal: Int,
     onLaunch: (LauncherApp) -> Unit,
+    onLaunchShow: (LauncherApp, Show) -> Unit,
     onOpenSettings: () -> Unit,
     onAppInfo: (LauncherApp) -> Unit,
     onAddFavorite: (LauncherApp) -> Unit,
@@ -74,8 +77,8 @@ fun HomeScreen(
             columns = GridCells.Fixed(COLUMNS),
             state = gridState,
             contentPadding = PaddingValues(horizontal = SafeHorizontal, vertical = SafeVertical),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(TileSpacing),
+            verticalArrangement = Arrangement.spacedBy(TileSpacing),
             modifier = Modifier.fillMaxSize(),
         ) {
             fullWidth("header") { Header(weather, onOpenSettings) }
@@ -85,12 +88,27 @@ fun HomeScreen(
                 appTiles("fav", state.favorites, initialFocus, onLaunch) { menuFor = it }
             }
 
+            state.showRows.forEachIndexed { index, row ->
+                fullWidth("shows:${row.app.key}") {
+                    ShowRowView(
+                        row = row,
+                        columns = COLUMNS,
+                        spacing = TileSpacing,
+                        edgePadding = SafeHorizontal,
+                        // Only the very first tile on screen takes initial focus.
+                        focusFirst = if (index == 0 && state.favorites.isEmpty()) initialFocus else null,
+                        onLaunchApp = onLaunch,
+                        onLaunchShow = onLaunchShow,
+                        onMenu = { menuFor = it },
+                    )
+                }
+            }
+
             fullWidth("apps-title") { SectionTitle(stringResource(R.string.all_apps)) }
             appTiles(
                 prefix = "app",
                 apps = state.apps,
-                // Only the very first tile on screen takes initial focus.
-                focusFirst = if (state.favorites.isEmpty()) initialFocus else null,
+                focusFirst = if (state.favorites.isEmpty() && state.showRows.isEmpty()) initialFocus else null,
                 onLaunch = onLaunch,
                 onMenu = { menuFor = it },
             )
@@ -101,7 +119,7 @@ fun HomeScreen(
         val index = state.favorites.indexOfFirst { it.key == app.key }
         AppActionSheet(
             app = app,
-            isFavorite = index >= 0,
+            isFavorite = state.isFavorite(app),
             canMoveLeft = index > 0,
             canMoveRight = index >= 0 && index < state.favorites.lastIndex,
             onDismiss = { menuFor = null },

@@ -41,6 +41,10 @@ class LongPressMenuTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitUntil(TIMEOUT_MS) { hasText("All apps") }
             compose.waitForIdle()
+            // Focus starts on the debug config's YouTube show row. Its app would be hidden from
+            // Favorites, so move down to the first tile in All apps.
+            press(KeyEvent.KEYCODE_DPAD_DOWN)
+            compose.waitForIdle()
 
             holdCenter()
             releaseCenter()

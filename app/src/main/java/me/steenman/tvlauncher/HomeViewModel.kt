@@ -1,6 +1,7 @@
 package me.steenman.tvlauncher
 
 import android.app.Application
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -10,41 +11,80 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import me.steenman.tvlauncher.data.AppRepository
 import me.steenman.tvlauncher.data.FavoritesStore
 import me.steenman.tvlauncher.data.LauncherApp
+import me.steenman.tvlauncher.data.shows.Show
+import me.steenman.tvlauncher.data.shows.ShowRepository
+import me.steenman.tvlauncher.data.shows.ShowRowConfig
 import me.steenman.tvlauncher.data.weather.Forecast
 import me.steenman.tvlauncher.data.weather.WeatherRepository
 import java.time.Duration
 import java.time.Instant
 
 data class HomeUiState(
+    /** Favorites as shown: apps that have a show row are left out. */
     val favorites: List<LauncherApp> = emptyList(),
+    val showRows: List<ShowRow> = emptyList(),
     val apps: List<LauncherApp> = emptyList(),
     val loaded: Boolean = false,
+    /** Every stored favorite, including those hidden because they have a show row. */
+    val favoriteKeys: Set<String> = emptySet(),
 ) {
-    fun isFavorite(app: LauncherApp): Boolean = favorites.any { it.key == app.key }
+    fun isFavorite(app: LauncherApp): Boolean = app.key in favoriteKeys
 }
+
+/** An installed app with its configured shows. */
+data class ShowRow(val app: LauncherApp, val shows: List<ShowTile>)
+
+data class ShowTile(val show: Show, val artwork: ImageBitmap?)
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     val repository = AppRepository(application)
     private val favoritesStore = FavoritesStore(application)
 
+    private val showRepository = ShowRepository(application)
+
     private val apps = MutableStateFlow<List<LauncherApp>?>(null)
+    private val showConfig = MutableStateFlow<List<ShowRowConfig>>(emptyList())
+
+    /** Loaded artwork by image URL. Only grows when a new image arrives. */
+    private val artwork = MutableStateFlow<Map<String, ImageBitmap>>(emptyMap())
+    private val artworkLoading = Mutex()
 
     val uiState: StateFlow<HomeUiState> =
-        combine(apps, favoritesStore.favorites) { apps, favoriteKeys ->
-            val installed = apps.orEmpty()
-            val byKey = installed.associateBy { it.key }
-            HomeUiState(
-                // Favorites whose app is (temporarily) missing are hidden, not forgotten.
-                favorites = favoriteKeys.mapNotNull { byKey[it] },
-                apps = installed,
-                loaded = apps != null,
-            )
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
+        combine(apps, favoritesStore.favorites, showConfig, artwork, ::homeUiState)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
+
+    init {
+        viewModelScope.launch {
+            val config = showRepository.loadConfig()
+            showConfig.value = config
+            if (config.isNotEmpty()) showRepository.pruneArtwork(config.imageUrls())
+            loadArtwork()
+        }
+    }
+
+    /** Loads artwork that isn't in memory yet: from disk, or downloaded once. Failed images retry on the next call. */
+    private fun loadArtwork() {
+        viewModelScope.launch {
+            if (!artworkLoading.tryLock()) return@launch
+            try {
+                for (url in showConfig.value.imageUrls() - artwork.value.keys) {
+                    showRepository.artwork(url)?.let { image -> artwork.update { it + (url to image) } }
+                }
+            } finally {
+                artworkLoading.unlock()
+            }
+        }
+    }
+
+    private fun List<ShowRowConfig>.imageUrls(): Set<String> =
+        flatMap { row -> row.shows.mapNotNull { it.image } }.toSet()
 
     private val weatherRepository =
         WeatherRepository(application, BuildConfig.WEATHER_LATITUDE, BuildConfig.WEATHER_LONGITUDE)
@@ -76,6 +116,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refresh() {
         viewModelScope.launch { apps.value = repository.loadApps() }
+        loadArtwork()
     }
 
     fun addFavorite(app: LauncherApp) = viewModelScope.launch { favoritesStore.add(app.key) }
@@ -99,4 +140,31 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val WEATHER_REFRESH: Duration = Duration.ofMinutes(30)
         val WEATHER_RETRY: Duration = Duration.ofMinutes(5)
     }
+}
+
+/** Puts installed apps, stored favorites, the show config and loaded artwork together. */
+internal fun homeUiState(
+    apps: List<LauncherApp>?,
+    favoriteKeys: List<String>,
+    config: List<ShowRowConfig>,
+    artwork: Map<String, ImageBitmap>,
+): HomeUiState {
+    val installed = apps.orEmpty()
+    val byKey = installed.associateBy { it.key }
+    val byPackage = installed.associateBy { it.packageName }
+    // Rows for apps that aren't installed, or without shows, are hidden.
+    val showRows = config.mapNotNull { row ->
+        val app = byPackage[row.app] ?: return@mapNotNull null
+        ShowRow(app, row.shows.map { ShowTile(it, it.image?.let(artwork::get)) })
+            .takeIf { it.shows.isNotEmpty() }
+    }
+    val showRowPackages = showRows.map { it.app.packageName }.toSet()
+    return HomeUiState(
+        // Favorites whose app is (temporarily) missing or has a show row are hidden, not forgotten.
+        favorites = favoriteKeys.mapNotNull { byKey[it] }.filterNot { it.packageName in showRowPackages },
+        showRows = showRows,
+        apps = installed,
+        loaded = apps != null,
+        favoriteKeys = favoriteKeys.toSet(),
+    )
 }

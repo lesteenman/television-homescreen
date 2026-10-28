@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -22,6 +23,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import me.steenman.tvlauncher.data.LauncherApp
+import me.steenman.tvlauncher.data.shows.Show
 import me.steenman.tvlauncher.ui.HomeScreen
 import me.steenman.tvlauncher.ui.LauncherTheme
 
@@ -64,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     weather = weather,
                     resetSignal = homeResets.intValue,
                     onLaunch = ::launch,
+                    onLaunchShow = ::launchShow,
                     onOpenSettings = { startSafely(Intent(Settings.ACTION_SETTINGS)) },
                     onAppInfo = { app ->
                         startSafely(
@@ -111,6 +114,12 @@ class MainActivity : ComponentActivity() {
 
     private fun launch(app: LauncherApp) = startSafely(viewModel.repository.launchIntent(app))
 
+    /** Opens [show] in [app] by its deep link, or just opens the app when the link isn't supported. */
+    private fun launchShow(app: LauncherApp, show: Show) {
+        val intent = showIntent(packageManager, app.packageName, show.link)
+        if (intent != null) startSafely(intent) else launch(app)
+    }
+
     private fun startSafely(intent: Intent) {
         try {
             startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -123,3 +132,9 @@ class MainActivity : ComponentActivity() {
         const val TAG = "TvLauncher"
     }
 }
+
+/** The deep-link intent for [link] in [packageName], or null if that app has nothing to handle it. */
+fun showIntent(packageManager: PackageManager, packageName: String, link: String): Intent? =
+    Intent(Intent.ACTION_VIEW, Uri.parse(link))
+        .setPackage(packageName)
+        .takeIf { it.resolveActivity(packageManager) != null }

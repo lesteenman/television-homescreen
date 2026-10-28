@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Approach B: disable the stock launcher so a HOME press falls through to us.
+# Approach B (superseded by C, see takeover-c.sh): disable the stock launcher so a HOME press falls through to us.
 #   scripts/takeover-b.sh                    -> disable launcherx only
 #   scripts/takeover-b.sh --with-setupwraith -> also disable the setup wizard,
 #                                               whose RecoveryActivity (priority 1) outranks us

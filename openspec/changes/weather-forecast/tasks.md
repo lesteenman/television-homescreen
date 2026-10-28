@@ -15,5 +15,5 @@
 ## 3. Verify
 
 - [x] 3.1 Check the layout on the emulator at 1080p, inside the safe area
-- [ ] 3.2 Measure frame times (`dumpsys gfxinfo`) and compare with `kitchen-launcher-poc` design D8 (emulator A/B done, see D6; the TV run comes with 3.3)
-- [ ] 3.3 Deploy the release build to the kitchen TV
+- [x] 3.2 Measure frame times (`dumpsys gfxinfo`) and compare with `kitchen-launcher-poc` design D8 (see D6)
+- [x] 3.3 Deploy the release build to the kitchen TV

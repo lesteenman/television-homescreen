@@ -49,7 +49,8 @@ The header currently holds a Settings button on the left and the clock and date 
 ### D6: Performance
 - The strip is text plus a few small vectors, recomposed only when new data arrives, which is at most every 30 minutes.
 - Re-measure frame times with `dumpsys gfxinfo` after implementation, and compare with `kitchen-launcher-poc` design D8.
-- Emulator A/B, 2026-10-28: the same release build with and without coordinates (strip hidden vs shown), 3 runs each of 3 HOME returns plus a D-pad tour. Without: median 17 ms, p95 17–19 ms, janky 3.0–3.5%. With: median 16–17 ms, p95 17–20 ms, janky 3.1–3.5%. No measurable difference. The emulator uses the Mac's GPU, so the TV run is still needed.
+- Emulator A/B, 2026-10-28: the same release build with and without coordinates (strip hidden vs shown), 3 runs each of 3 HOME returns plus a D-pad tour. Without: median 17 ms, p95 17–19 ms, janky 3.0–3.5%. With: median 16–17 ms, p95 17–20 ms, janky 3.1–3.5%. No measurable difference.
+- Kitchen TV, 2026-10-28, release build with the strip, same method as D8, 3 runs: median 24 ms, p95 26–34 ms, p99 48–61 ms, janky 4.2–4.7%. That matches D8's last row (24 / 34 / 48 ms, 4%), so the strip costs nothing noticeable on the Chromecast HD.
 
 ### D7: Implementation notes
 - The fetch uses `HttpURLConnection` and the platform's `org.json`, so no networking or JSON library is added.

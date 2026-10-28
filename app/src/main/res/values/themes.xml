@@ -1,0 +1,8 @@
+<resources>
+    <!-- windowBackground matches the gradient's first stop so there is no flash before Compose draws. -->
+    <style name="Theme.TvLauncher" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/gradient_start</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:colorBackground">@color/gradient_start</item>
+    </style>
+</resources>

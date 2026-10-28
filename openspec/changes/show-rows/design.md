@@ -51,11 +51,11 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
   - Netflix (`com.netflix.ninja`): `https://www.netflix.com/title/<id>` (also `/watch/<id>`, and the `nflx://` scheme).
   - Disney+ (`com.disney.disneyplus`): any `https://www.disneyplus.com/...` URL resolves, but only the current form opens the show: `https://www.disneyplus.com/browse/entity-<uuid>`. The old `/series/<slug>/<id>` form lands on the Disney+ home page. Copy links from the website's address bar after it has redirected.
   - Spotify (`com.spotify.tv.android`): `spotify:<type>:<id>` or `https://open.spotify.com/<type>/<id>` for album, artist, playlist, show and more.
-  - Videoland (`nl.rtl.videoland.v2`, from its Play Store listing): web pages are `https://v2.videoland.com/<slug>-p_<id>`. Whether the TV app handles those links, and whether that is its package on this TV, is still to check; until then a tile that can't be resolved just opens the app, and a wrong package hides the row.
+  - Videoland (`nl.rtl.videoland.v2`, confirmed on the TV): `https://v2.videoland.com/<slug>-p_<id>`, handled by its `DeepLinkActivity` (path glob `/.*_.*`). There is also a `videoland-v2://` scheme.
 
 ### D3a: Where the show list comes from (2026-10-28)
-- Links: JustWatch's Dutch pages (`justwatch.com/nl/tv-series/<slug>`) link to each service's own page, which gives Netflix title IDs, Disney+ entity links and Videoland page links for the Dutch catalogue. Netflix pages show nothing without JavaScript, so their IDs are taken from JustWatch unchecked.
-- Artwork: TMDB backdrops at `https://image.tmdb.org/t/p/w780/<file>.jpg`, picked by hand from the show's backdrops page (`themoviedb.org/tv/<id>/images/backdrops`). Versions with the show's title in the image are preferred, so they're easy to recognise.
+- Links: JustWatch's Dutch pages (`justwatch.com/nl/tv-series/<slug>`) link to each service's own page, which gives Netflix title IDs, Disney+ entity links and Videoland page links for the Dutch catalogue. All 9 were opened on the TV. JustWatch's Bluey link was wrong (it is "Bluey Compilations"); the main series was found by reading the `og:title` of the Disney+ pages linked from that page.
+- Artwork: TMDB backdrops at `https://image.tmdb.org/t/p/w780/<file>.jpg`, picked by hand from the show's backdrops page (`themoviedb.org/tv/<id>/images/backdrops`). Versions with the show's title in the image are preferred, so they're easy to recognise. The first image on that page is the show's poster (2:3), not a backdrop: check that a picked image is 16:9, or the tile crops it to its middle.
 
 ### D4: Profiles can't be chosen from a deep link
 - No app takes a profile in its link. Measured on the kitchen TV, 2026-10-28:
@@ -64,8 +64,12 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 |---|---|---|
 | Disney+ | "Who's watching?" picker; after picking a profile it **continues to the show** | Straight to the show (entity link) |
 | Spotify | No profiles; **starts playing** the playlist right away | Same: starts playing |
-| Netflix | Not observed yet: Netflix blocks screen capture and its UI tree is empty, so this needs someone looking at the TV | Not observed yet |
+| Netflix, plain `ACTION_VIEW` | Picker, then the Netflix **home page**: the link is lost | Netflix comes to the front where it was; the link is **ignored** |
+| Netflix, partner launch (below) | **Straight to the show**, no picker (picker behaviour may depend on how recently a profile was chosen) | Straight to the show |
+| Videoland | "Wie kijkt er?" picker; after picking a profile it **continues to the show** | Straight to the show |
 
+- Netflix partner launch: the same `ACTION_VIEW` link plus `FLAG_ACTIVITY_CLEAR_TASK | FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS` and the extra `source=30`, as TV partner apps launch Netflix. `showIntent()` adds this for `com.netflix.ninja` only. Tested on the kitchen TV, 2026-10-28, from the launcher's own tile too.
+- No app has a link or URL parameter that picks a profile. Videoland's `/profielkeuze` path only opens its picker.
 - So for Disney+ the profile picker costs one press and the link still works. Spotify links are "play this", not "show this", which suits music in the kitchen.
 - Ways to reduce the friction that sit outside the launcher: a single profile per household app on this TV, or that app's own setting to skip the profile picker, where it has one.
 
@@ -85,7 +89,8 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 - Only bitmaps at display size, the same as banners: no shaders, no autoplay, no animations beyond the standard card focus.
 - Config and artwork loading happen off the main thread. The UI state for show rows only changes when the config or the artwork actually changes, keeping the "no recomposition on return home" behaviour.
 - Expected memory: about 230 KB per show tile, so 30 shows is about 7 MB.
-- Emulator A/B, 2026-10-28: the same release build without show rows and with a YouTube row of 6 shows, 3 runs each of 3 HOME returns plus a D-pad tour. Without: median 17 ms, p95 19 ms, janky 3.0–3.5%. With: median 17 ms, p95 18–19 ms, janky 2.4–2.8%. No measurable difference. The TV run is still to do.
+- Emulator A/B, 2026-10-28: the same release build without show rows and with a YouTube row of 6 shows, 3 runs each of 3 HOME returns plus a D-pad tour. Without: median 17 ms, p95 19 ms, janky 3.0–3.5%. With: median 17 ms, p95 18–19 ms, janky 2.4–2.8%. No measurable difference.
+- Kitchen TV, 2026-10-28, release build with the 3 real rows, same method as D8, 3 runs: median 23 ms, p95 28–38 ms, p99 69–85 ms, janky 4.6–5.6%. The median matches the weather-forecast run (24 ms), but the tail is a bit higher (p99 there 48–61 ms, janky 4.2–4.7%). The same key presses now move through the rows, so it isn't a like-for-like comparison. It doesn't feel slower in use; a Baseline Profile for our own code (D8 of `kitchen-launcher-poc`) is the next step if it ever does.
 
 ### D8: Implementation notes
 - `app/src/debug/assets/shows.json` overrides the real list in debug builds with a YouTube row (artwork, a title-only tile, a link YouTube can't handle, and enough shows to scroll), so the emulator, which has no Netflix, Disney+ or Spotify, has something to show. Release builds use `app/src/main/assets/shows.json`.
@@ -103,5 +108,4 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 
 ## Open Questions
 
-- Netflix cold and warm start behaviour (D4), which needs someone looking at the TV.
-- Videoland's package and link support on the kitchen TV (D3).
+- Skipping the profile pickers isn't possible through links (D4).

@@ -137,4 +137,17 @@ class MainActivity : ComponentActivity() {
 fun showIntent(packageManager: PackageManager, packageName: String, link: String): Intent? =
     Intent(Intent.ACTION_VIEW, Uri.parse(link))
         .setPackage(packageName)
+        .apply { if (packageName == NETFLIX) netflixPartnerLaunch() }
         .takeIf { it.resolveActivity(packageManager) != null }
+
+private const val NETFLIX = "com.netflix.ninja"
+
+/**
+ * Netflix ignores a link sent to its running task, and loses it behind the profile picker on a
+ * cold start. Launched like a TV partner app (a fresh task plus `source=30`), it opens the title
+ * in both cases (tested on the kitchen TV, 2026-10-28).
+ */
+private fun Intent.netflixPartnerLaunch() {
+    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+    putExtra("source", "30")
+}

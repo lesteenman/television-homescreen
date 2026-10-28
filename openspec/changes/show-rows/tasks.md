@@ -1,8 +1,8 @@
 ## 1. Deep-link spike (kitchen TV, when convenient)
 
-- [ ] 1.1 (Disney+ and Spotify done; Netflix needs someone watching the TV) For Netflix, Disney+ and Spotify, open a known show with `adb shell am start -a android.intent.action.VIEW -d <link> -p <package>` from a cold start and a warm start; record in design.md D4 whether the profile picker appears and whether the app continues to the show afterwards
+- [x] 1.1 For Netflix, Disney+ and Spotify, open a known show with `adb shell am start -a android.intent.action.VIEW -d <link> -p <package>` from a cold start and a warm start; record in design.md D4 whether the profile picker appears and whether the app continues to the show afterwards
 - [x] 1.2 Record the working link format per app in design.md D3
-- [ ] 1.3 Check Videoland on the TV: its package name, and whether `v2.videoland.com` links open the show
+- [x] 1.3 Check Videoland on the TV: its package name, and whether `v2.videoland.com` links open the show
 
 ## 2. Config
 
@@ -27,5 +27,5 @@
 
 ## 5. Verify
 
-- [ ] 5.1 (emulator done, see D7) Measure frame times on the emulator, then on the TV (`dumpsys gfxinfo`), and compare with design D8 of `kitchen-launcher-poc`
-- [ ] 5.2 Deploy the release build to the kitchen TV with real shows; check offline behaviour
+- [x] 5.1 Measure frame times on the emulator, then on the TV (`dumpsys gfxinfo`), and compare with design D8 of `kitchen-launcher-poc`
+- [ ] 5.2 Deploy the release build to the kitchen TV with real shows (done); check offline behaviour (not yet)

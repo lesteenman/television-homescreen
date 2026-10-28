@@ -17,6 +17,10 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
         </intent>
+        <!-- Google TV Settings' voice action that starts the screensaver. -->
+        <intent>
+            <action android:name="com.google.android.pano.action.SLEEP" />
+        </intent>
     </queries>
 
     <application

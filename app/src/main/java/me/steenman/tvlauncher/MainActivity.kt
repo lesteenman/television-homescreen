@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -31,6 +32,11 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: HomeViewModel by viewModels()
 
+    private val backGuard = BackToScreensaverGuard()
+
+    /** Whether the BACK press now being handled may start the screensaver (see [dispatchKeyEvent]). */
+    private var backStartsScreensaver = false
+
     /** Bumped on every HOME intent so the UI scrolls to the top and resets focus. */
     private val homeResets = mutableIntStateOf(0)
 
@@ -48,9 +54,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // BACK on the home screen stays here; there is nothing "behind" a launcher.
+        val screensaverAvailable = Screensaver.isAvailable(packageManager)
+
+        // BACK on the home screen never leaves it; there is nothing "behind" a launcher.
+        // It starts the screensaver instead, when the guard allows it.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = Unit
+            override fun handleOnBackPressed() {
+                if (screensaverAvailable && backStartsScreensaver) startSafely(Screensaver.intent)
+                backStartsScreensaver = false
+            }
         })
 
         lifecycleScope.launch {
@@ -79,6 +91,11 @@ class MainActivity : ComponentActivity() {
                     onAddFavorite = viewModel::addFavorite,
                     onRemoveFavorite = viewModel::removeFavorite,
                     onMoveFavorite = viewModel::moveFavorite,
+                    onStartScreensaver = if (screensaverAvailable) {
+                        { startSafely(Screensaver.intent) }
+                    } else {
+                        null
+                    },
                 )
             }
         }
@@ -99,12 +116,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        backGuard.onResume()
         viewModel.refresh()
     }
 
     override fun onStop() {
         unregisterReceiver(packageReceiver)
         super.onStop()
+    }
+
+    // The back callback doesn't see the key event, so the guard decides on BACK's key-down.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN) {
+            backStartsScreensaver = backGuard.allows(event.repeatCount)
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onNewIntent(intent: Intent) {

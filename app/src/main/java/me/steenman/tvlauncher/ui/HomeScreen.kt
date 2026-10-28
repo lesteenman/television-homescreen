@@ -55,6 +55,8 @@ fun HomeScreen(
     onAddFavorite: (LauncherApp) -> Unit,
     onRemoveFavorite: (LauncherApp) -> Unit,
     onMoveFavorite: (LauncherApp, Int) -> Unit,
+    /** Null when this device has no way to start the screensaver; the button is then hidden. */
+    onStartScreensaver: (() -> Unit)? = null,
 ) {
     val gridState = rememberLazyGridState()
     val initialFocus = remember { FocusRequester() }
@@ -81,7 +83,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(TileSpacing),
             modifier = Modifier.fillMaxSize(),
         ) {
-            fullWidth("header") { Header(weather, onOpenSettings) }
+            fullWidth("header") { Header(weather, onOpenSettings, onStartScreensaver) }
 
             // Apps with shows come first; the remaining favorites follow under their own title.
             state.showRows.forEachIndexed { index, row ->
@@ -158,7 +160,7 @@ private fun LazyGridScope.appTiles(
 }
 
 @Composable
-private fun Header(weather: Forecast?, onOpenSettings: () -> Unit) {
+private fun Header(weather: Forecast?, onOpenSettings: () -> Unit, onStartScreensaver: (() -> Unit)?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -166,14 +168,22 @@ private fun Header(weather: Forecast?, onOpenSettings: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Button(
-            onClick = onOpenSettings,
-            colors = ButtonDefaults.colors(containerColor = CardContainer, contentColor = TextPrimary),
-        ) {
-            Text(stringResource(R.string.settings))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HeaderButton(stringResource(R.string.settings), onOpenSettings)
+            onStartScreensaver?.let { HeaderButton(stringResource(R.string.screensaver), it) }
         }
         Weather(weather)
         Clock()
+    }
+}
+
+@Composable
+private fun HeaderButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.colors(containerColor = CardContainer, contentColor = TextPrimary),
+    ) {
+        Text(text)
     }
 }
 

@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Gradient background with no ads or recommendations
-The home screen SHALL use a static gradient background drawn locally. It SHALL NOT show content recommendations, promoted apps or ads. Network access SHALL be limited to user-configured content: the show configuration file and the artwork it references.
+The home screen SHALL use a static gradient background drawn locally. It SHALL NOT show content recommendations, promoted apps or ads. Network access SHALL be limited to user-configured content: the artwork referenced by the bundled show configuration.
 
 #### Scenario: Offline home screen
 - **WHEN** the device has no network connection

@@ -18,14 +18,13 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 
 ## Decisions
 
-### D1: Shows come from a remote JSON file
-- At startup, and on resume when the cached copy is older than 6 hours, the launcher fetches a JSON file from a URL fixed at build time (`showsConfigUrl` from `gradle.properties` or `local.properties`). The last good copy is cached in app storage and used offline and when a fetch fails.
-- Adding a show means editing that file. The TV picks it up within 6 hours, or straight away after a launcher restart.
-- Alternatives considered:
-  - **Hard-coded in the APK:** simplest, but every change means a rebuild and a deploy over adb, with wireless debugging switched on by hand.
+### D1: Shows come from a bundled JSON file (for now)
+- **Decided 2026-10-28:** v1 bundles `app/src/main/assets/shows.json` in the APK. Adding a show means editing that file, rebuilding, and deploying with `scripts/deploy.sh tv --release`.
+- The parser takes a string and doesn't care where it came from, so a remote source can be added later without changing the format.
+- Alternatives, kept for later:
+  - **Remote file** (secret GitHub gist or `https://steenman.me/tvlauncher/shows.json`): changes without a rebuild. It would add fetching, caching and a refresh policy (at start, and on resume when older than 6 hours).
   - **Editing on the TV:** entering a deep link or show ID with the remote's on-screen keyboard is painful, and other apps don't share show links on TV.
-  - **A small web page served by the launcher on the LAN:** pleasant to use from a phone, but it means running an HTTP server on the TV, with security and complexity costs. Worth keeping in mind for later.
-- Hosting options: `https://steenman.me/tvlauncher/shows.json`, or a secret GitHub gist (raw URL). It must be HTTPS; the file is public but unguessable at most. It holds nothing sensitive, just show titles and links.
+  - **A small web page served by the launcher on the LAN:** pleasant to use from a phone, but it means running an HTTP server on the TV, with security and complexity costs.
 
 ### D2: Config format
 
@@ -48,26 +47,31 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 
 ### D3: Deep-link launching
 - Launch with `Intent(ACTION_VIEW, Uri.parse(link)).setPackage(app)` and `FLAG_ACTIVITY_NEW_TASK`. If nothing resolves it, fall back to the app's leanback launch intent.
-- Expected link formats, to be confirmed in the spike:
-  - Netflix: `https://www.netflix.com/title/<id>`
-  - Disney+: `https://www.disneyplus.com/series/<slug>/<id>`
-  - Spotify: `spotify:playlist:<id>`, `spotify:album:<id>`, `spotify:show:<id>`
+- Link formats, from the apps' intent filters on the kitchen TV (2026-10-28):
+  - Netflix (`com.netflix.ninja`): `https://www.netflix.com/title/<id>` (also `/watch/<id>`, and the `nflx://` scheme).
+  - Disney+ (`com.disney.disneyplus`): any `https://www.disneyplus.com/...` URL resolves, but only the current form opens the show: `https://www.disneyplus.com/browse/entity-<uuid>`. The old `/series/<slug>/<id>` form lands on the Disney+ home page. Copy links from the website's address bar after it has redirected.
+  - Spotify (`com.spotify.tv.android`): `spotify:<type>:<id>` or `https://open.spotify.com/<type>/<id>` for album, artist, playlist, show and more.
 
 ### D4: Profiles can't be chosen from a deep link
-- As far as public behaviour goes, Netflix and Disney+ deep links carry no profile parameter.
-  - **Cold start** (app not running): expect the profile picker first. Whether the app then continues to the show or drops you on its home page differs per app.
-  - **Warm start** (a profile already active): the link should go straight to the show.
-  - Spotify has no profiles, so its links go straight through.
-- The spike (tasks 1.x) records the actual behaviour per app on the kitchen TV. If an app forgets the link after the profile picker, its tiles can open the app and show a hint instead.
+- No app takes a profile in its link. Measured on the kitchen TV, 2026-10-28:
+
+| App | Cold start (app not running) | Warm start (profile active) |
+|---|---|---|
+| Disney+ | "Who's watching?" picker; after picking a profile it **continues to the show** | Straight to the show (entity link) |
+| Spotify | No profiles; **starts playing** the playlist right away | Same: starts playing |
+| Netflix | Not observed yet: Netflix blocks screen capture and its UI tree is empty, so this needs someone looking at the TV | Not observed yet |
+
+- So for Disney+ the profile picker costs one press and the link still works. Spotify links are "play this", not "show this", which suits music in the kitchen.
 - Ways to reduce the friction that sit outside the launcher: a single profile per household app on this TV, or that app's own setting to skip the profile picker, where it has one.
 
 ### D5: Artwork is fetched once and cached
 - Each show's `image` URL is downloaded once with `HttpURLConnection` (no new library). It is decoded and scaled to 320×180 like app banners, and stored as `files/artwork/<sha256(url)>.webp`.
-- It is downloaded again only when the URL changes. Files no longer referenced in the config are deleted after a successful config fetch.
+- It is downloaded again only when the URL changes. Files no longer referenced in the config are deleted after the config is loaded.
 - While artwork is missing or failed, the tile shows the title on the card colour.
 
 ### D6: Layout
 - Order: header → Favorites → **show rows** → All apps.
+- **Decided 2026-10-28:** an app with a show row is left out of the Favorites row. Its favorite entry stays stored, so it comes back in its old position if its show row is removed.
 - Each show row is a full-width item in the existing grid that holds a `LazyRow`. Tile 0 is the app's banner card, which launches the app; the show cards follow, at the same 16:9 size as the other tiles. There's no row title, because the app tile already says which app it is.
 - D-pad: down from Favorites lands on the row's app tile; right moves along the shows. Each row keeps its own horizontal scroll position.
 - The long-press menu on a show tile is out of scope for v1. The show list is managed in the config.
@@ -87,6 +91,5 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 
 ## Open Questions
 
-- Where do we host `shows.json`: steenman.me or a secret gist?
-- Which shows per app to start with?
-- Should apps with a show row still appear in Favorites, or does the show row replace their favorite tile?
+- Netflix cold and warm start behaviour (D4), which needs someone looking at the TV.
+- Which shows per app to start with. v1 ships placeholders until the real list is known.

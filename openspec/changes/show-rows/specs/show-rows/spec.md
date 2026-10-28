@@ -1,19 +1,19 @@
 ## ADDED Requirements
 
-### Requirement: Show configuration from a remote file
-The launcher SHALL read its show rows from a JSON file at a build-time configured HTTPS URL, using the format in design.md (D2). It SHALL fetch the file at startup, and on resume when the cached copy is older than 6 hours. It SHALL keep the last valid copy on the device and use it whenever a fetch fails.
+### Requirement: Show configuration bundled with the app
+The launcher SHALL read its show rows from a JSON file bundled in the APK (`assets/shows.json`), using the format in design.md (D2). The parser SHALL not depend on where the file comes from, so a remote source can be added later without changing the format.
 
-#### Scenario: Show added remotely
-- **WHEN** a show is added to the remote file and the launcher is restarted
-- **THEN** the new show tile appears without rebuilding or reinstalling the launcher
+#### Scenario: Show added
+- **WHEN** a show is added to `shows.json` and the launcher is rebuilt and installed
+- **THEN** the new show tile appears
 
 #### Scenario: Offline start
-- **WHEN** the device has no network but a cached config exists
-- **THEN** the show rows from the cached config are shown
+- **WHEN** the device has no network
+- **THEN** all show rows are shown, with cached artwork where it was downloaded before
 
-#### Scenario: Invalid remote file
-- **WHEN** the fetched file is not valid JSON or has an unsupported `version`
-- **THEN** the cached config stays in use and the invalid file is not stored
+#### Scenario: Invalid file
+- **WHEN** `shows.json` is not valid JSON or has an unsupported `version`
+- **THEN** no show rows are shown and the rest of the home screen works as before
 
 ### Requirement: One row per app with shows
 For each config row whose app is installed, the home screen SHALL show a horizontally scrollable row. Its first tile is the app's banner card and its following tiles are the configured shows, in config order. Show rows SHALL appear below Favorites and above All apps. Rows for apps that aren't installed SHALL be hidden.
@@ -26,6 +26,10 @@ For each config row whose app is installed, the home screen SHALL show a horizon
 - **WHEN** a config row names an app that isn't installed
 - **THEN** no row is shown for it
 
+#### Scenario: Show row replaces the favorite tile
+- **WHEN** an app is a favorite and also has a show row
+- **THEN** it does not appear in the Favorites row, and its favorite position is kept for when the show row goes away
+
 #### Scenario: D-pad through a row
 - **WHEN** focus is on a row's app tile and the user presses right repeatedly
 - **THEN** focus moves through the show tiles and the row scrolls to keep the focused tile visible
@@ -35,14 +39,14 @@ Selecting a show tile SHALL start the show's `link` as an `ACTION_VIEW` intent r
 
 #### Scenario: Deep link works
 - **WHEN** the user selects a show tile whose link the app supports
-- **THEN** the app opens on that show, possibly after the app's own profile picker
+- **THEN** the app opens on that show (or, for music, starts playing it), possibly after the app's own profile picker
 
 #### Scenario: Deep link unsupported
 - **WHEN** the user selects a show tile whose link no activity in the app handles
 - **THEN** the app opens on its own start screen
 
 ### Requirement: Artwork fetched once and cached
-Each show's artwork SHALL be downloaded once from its `image` URL, scaled to the tile size and stored on the device. It SHALL only be downloaded again when the URL changes. Cached artwork no longer referenced by the config SHALL be deleted after a successful config fetch. A tile without artwork SHALL show the show's title.
+Each show's artwork SHALL be downloaded once from its `image` URL, scaled to the tile size and stored on the device. It SHALL only be downloaded again when the URL changes. Cached artwork no longer referenced by the config SHALL be deleted after the config is loaded. A tile without artwork SHALL show the show's title.
 
 #### Scenario: Return home
 - **WHEN** the user returns to the home screen and the config hasn't changed
@@ -50,4 +54,4 @@ Each show's artwork SHALL be downloaded once from its `image` URL, scaled to the
 
 #### Scenario: Artwork unavailable
 - **WHEN** an image URL fails to download
-- **THEN** the tile shows the show title and the download is retried at the next config refresh
+- **THEN** the tile shows the show title and the download is retried the next time the home screen resumes

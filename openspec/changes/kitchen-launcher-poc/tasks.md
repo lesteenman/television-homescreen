@@ -20,6 +20,7 @@
 - [x] 2.10 Settings tile opening `Settings.ACTION_SETTINGS`
 - [x] 2.11 Initial focus, BACK does nothing, HOME-while-home scrolls to top and resets focus
 - [x] 2.12 Verify all launcher-home-screen scenarios in the emulator
+- [x] 2.13 Fix: releasing the long-press that opened the menu must not pick an item (instrumented test `LongPressMenuTest`)
 
 ## 3. Kitchen device prep
 

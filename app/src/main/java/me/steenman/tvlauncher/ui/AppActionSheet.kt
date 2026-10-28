@@ -1,5 +1,6 @@
 package me.steenman.tvlauncher.ui
 
+import android.view.KeyEvent as AndroidKeyEvent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -40,11 +45,14 @@ fun AppActionSheet(
     Dialog(onDismissRequest = onDismiss) {
         val firstItem = remember { FocusRequester() }
         val first = Modifier.focusRequester(firstItem)
+        val ignoreHeldSelect = remember { HeldSelectFilter() }
 
         Surface(
             shape = RoundedCornerShape(16.dp),
             colors = SurfaceDefaults.colors(containerColor = Color(0xF0101C2A)),
-            modifier = Modifier.width(360.dp),
+            modifier = Modifier
+                .width(360.dp)
+                .onPreviewKeyEvent { ignoreHeldSelect.consumes(it) },
         ) {
             Column(Modifier.padding(16.dp)) {
                 Text(
@@ -64,6 +72,32 @@ fun AppActionSheet(
         }
 
         LaunchedEffect(Unit) { runCatching { firstItem.requestFocus() } }
+    }
+}
+
+/**
+ * The menu opens while OK is still held. The remote keeps sending repeated key-downs and
+ * finally a key-up for that same hold; without this filter they would pick the focused item.
+ * Select-key events are swallowed until the menu sees a fresh key press of its own.
+ */
+private class HeldSelectFilter {
+    private var armed = false
+
+    fun consumes(event: KeyEvent): Boolean {
+        if (armed) return false
+        if (event.type == KeyEventType.KeyDown && event.nativeKeyEvent.repeatCount == 0) {
+            armed = true
+            return false
+        }
+        return event.nativeKeyEvent.keyCode in SELECT_KEYS
+    }
+
+    private companion object {
+        val SELECT_KEYS = setOf(
+            AndroidKeyEvent.KEYCODE_DPAD_CENTER,
+            AndroidKeyEvent.KEYCODE_ENTER,
+            AndroidKeyEvent.KEYCODE_NUMPAD_ENTER,
+        )
     }
 }
 

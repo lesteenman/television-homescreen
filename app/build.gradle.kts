@@ -10,6 +10,15 @@ val keystoreProperties = Properties().apply {
     rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
+// The weather location is local-only too: weather.latitude / weather.longitude in local.properties.
+// Without them the launcher builds fine and simply shows no weather.
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
+fun coordinate(name: String): String =
+    localProperties.getProperty(name)?.trim()?.toDoubleOrNull()?.toString() ?: "Double.NaN"
+
 android {
     namespace = "me.steenman.tvlauncher"
     compileSdk = 37
@@ -21,6 +30,9 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("double", "WEATHER_LATITUDE", coordinate("weather.latitude"))
+        buildConfigField("double", "WEATHER_LONGITUDE", coordinate("weather.longitude"))
     }
 
     signingConfigs {
@@ -50,6 +62,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -67,6 +80,9 @@ dependencies {
     implementation(libs.androidx.tv.material)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.json)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

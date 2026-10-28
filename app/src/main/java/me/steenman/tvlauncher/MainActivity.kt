@@ -16,7 +16,11 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import me.steenman.tvlauncher.data.LauncherApp
 import me.steenman.tvlauncher.ui.HomeScreen
 import me.steenman.tvlauncher.ui.LauncherTheme
@@ -47,11 +51,17 @@ class MainActivity : ComponentActivity() {
             override fun handleOnBackPressed() = Unit
         })
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) { viewModel.keepWeatherFresh() }
+        }
+
         setContent {
             val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val weather by viewModel.weather.collectAsStateWithLifecycle()
             LauncherTheme {
                 HomeScreen(
                     state = state,
+                    weather = weather,
                     resetSignal = homeResets.intValue,
                     onLaunch = ::launch,
                     onOpenSettings = { startSafely(Intent(Settings.ACTION_SETTINGS)) },

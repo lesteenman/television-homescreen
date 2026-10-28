@@ -8,6 +8,9 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <!-- Only for the weather forecast (Open-Meteo). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Lets PackageManager see every TV app without QUERY_ALL_PACKAGES. -->
     <queries>
         <intent>

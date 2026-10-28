@@ -33,6 +33,7 @@ import androidx.tv.material3.Text
 import me.steenman.tvlauncher.HomeUiState
 import me.steenman.tvlauncher.R
 import me.steenman.tvlauncher.data.LauncherApp
+import me.steenman.tvlauncher.data.weather.Forecast
 
 private const val COLUMNS = 5
 
@@ -43,6 +44,7 @@ private val SafeVertical = 27.dp
 @Composable
 fun HomeScreen(
     state: HomeUiState,
+    weather: Forecast?,
     resetSignal: Int,
     onLaunch: (LauncherApp) -> Unit,
     onOpenSettings: () -> Unit,
@@ -76,7 +78,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             modifier = Modifier.fillMaxSize(),
         ) {
-            fullWidth("header") { Header(onOpenSettings) }
+            fullWidth("header") { Header(weather, onOpenSettings) }
 
             if (state.favorites.isNotEmpty()) {
                 fullWidth("favorites-title") { SectionTitle(stringResource(R.string.favorites)) }
@@ -131,7 +133,7 @@ private fun LazyGridScope.appTiles(
 }
 
 @Composable
-private fun Header(onOpenSettings: () -> Unit) {
+private fun Header(weather: Forecast?, onOpenSettings: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,6 +147,7 @@ private fun Header(onOpenSettings: () -> Unit) {
         ) {
             Text(stringResource(R.string.settings))
         }
+        Weather(weather)
         Clock()
     }
 }

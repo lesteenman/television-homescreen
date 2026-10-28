@@ -79,10 +79,10 @@ Other apps' recommendations are not available to us. `READ_EPG_DATA` is a normal
 - While artwork is missing or failed, the tile shows the title on the card colour.
 
 ### D6: Layout
-- Order: header → Favorites → **show rows** → All apps.
+- Order: header → **show rows** → Favorites → All apps. **Decided 2026-10-28:** apps with shows come first, in config order; the remaining favorites follow under the Favorites title. Initial focus is the first row's app tile.
 - **Decided 2026-10-28:** an app with a show row is left out of the Favorites row. Its favorite entry stays stored, so it comes back in its old position if its show row is removed.
 - Each show row is a full-width item in the existing grid that holds a `LazyRow`. Tile 0 is the app's banner card, which launches the app; the show cards follow, at the same 16:9 size as the other tiles. There's no row title, because the app tile already says which app it is.
-- D-pad: down from Favorites lands on the row's app tile; right moves along the shows. Each row keeps its own horizontal scroll position.
+- D-pad: down moves from row to row, starting on each row's app tile; right moves along the shows. Each row keeps its own horizontal scroll position.
 - The long-press menu on a show tile is out of scope for v1. The show list is managed in the config.
 
 ### D7: Performance

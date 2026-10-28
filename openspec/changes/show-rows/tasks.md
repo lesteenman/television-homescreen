@@ -19,7 +19,7 @@
 
 ## 4. UI
 
-- [x] 4.1 Show rows between Favorites and All apps: app tile first, then shows, in a `LazyRow`
+- [x] 4.1 Show rows above Favorites and All apps: app tile first, then shows, in a `LazyRow`
 - [x] 4.2 Launch shows by deep link with a fallback to the app
 - [x] 4.3 Hide rows for apps that aren't installed; update when apps are installed or removed
 - [x] 4.5 Leave apps with a show row out of the Favorites row, keeping their stored favorite position

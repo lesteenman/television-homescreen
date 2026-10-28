@@ -4,7 +4,7 @@ The home screen only opens apps, so getting to the show you're watching means op
 
 ## What Changes
 
-- New **show rows**: one horizontal row per app that has configured shows. The leftmost tile is the app itself, with the show tiles to its right. The rows sit between Favorites and All apps.
+- New **show rows**: one horizontal row per app that has configured shows. The leftmost tile is the app itself, with the show tiles to its right. The rows sit directly below the header, above Favorites and All apps.
 - Selecting a show tile opens that show in its app through a **deep link**. If the link can't be opened, the app opens instead.
 - The shows are defined in a **JSON file bundled in the APK** for now. Changing them needs a rebuild and deploy; the format is ready for a remote file later, so shows can then change without one.
 - An app with a show row is **left out of the Favorites row**, so each app appears once above All apps.
@@ -18,7 +18,7 @@ The home screen only opens apps, so getting to the show you're watching means op
 - `show-rows`: The show configuration source and caching, the per-app show rows, deep-link launching with a fallback, and artwork fetching and caching.
 
 ### Modified Capabilities
-- `launcher-home-screen`: The "no network" part of *Gradient background with no ads or recommendations* changes to allow user-configured content, and the layout gains the show rows between Favorites and All apps.
+- `launcher-home-screen`: The "no network" part of *Gradient background with no ads or recommendations* changes to allow user-configured content, and the layout gains the show rows above Favorites.
 
 ## Impact
 

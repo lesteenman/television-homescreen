@@ -16,7 +16,7 @@ The launcher SHALL read its show rows from a JSON file bundled in the APK (`asse
 - **THEN** no show rows are shown and the rest of the home screen works as before
 
 ### Requirement: One row per app with shows
-For each config row whose app is installed, the home screen SHALL show a horizontally scrollable row. Its first tile is the app's banner card and its following tiles are the configured shows, in config order. Show rows SHALL appear below Favorites and above All apps. Rows for apps that aren't installed SHALL be hidden.
+For each config row whose app is installed, the home screen SHALL show a horizontally scrollable row. Its first tile is the app's banner card and its following tiles are the configured shows, in config order. Show rows SHALL appear directly below the header, above Favorites and All apps, so the first row's app tile has initial focus. Rows for apps that aren't installed SHALL be hidden.
 
 #### Scenario: Row layout
 - **WHEN** the config has two Netflix shows and Netflix is installed

@@ -83,11 +83,7 @@ fun HomeScreen(
         ) {
             fullWidth("header") { Header(weather, onOpenSettings) }
 
-            if (state.favorites.isNotEmpty()) {
-                fullWidth("favorites-title") { SectionTitle(stringResource(R.string.favorites)) }
-                appTiles("fav", state.favorites, initialFocus, onLaunch) { menuFor = it }
-            }
-
+            // Apps with shows come first; the remaining favorites follow under their own title.
             state.showRows.forEachIndexed { index, row ->
                 fullWidth("shows:${row.app.key}") {
                     ShowRowView(
@@ -96,12 +92,23 @@ fun HomeScreen(
                         spacing = TileSpacing,
                         edgePadding = SafeHorizontal,
                         // Only the very first tile on screen takes initial focus.
-                        focusFirst = if (index == 0 && state.favorites.isEmpty()) initialFocus else null,
+                        focusFirst = if (index == 0) initialFocus else null,
                         onLaunchApp = onLaunch,
                         onLaunchShow = onLaunchShow,
                         onMenu = { menuFor = it },
                     )
                 }
+            }
+
+            if (state.favorites.isNotEmpty()) {
+                fullWidth("favorites-title") { SectionTitle(stringResource(R.string.favorites)) }
+                appTiles(
+                    prefix = "fav",
+                    apps = state.favorites,
+                    focusFirst = if (state.showRows.isEmpty()) initialFocus else null,
+                    onLaunch = onLaunch,
+                    onMenu = { menuFor = it },
+                )
             }
 
             fullWidth("apps-title") { SectionTitle(stringResource(R.string.all_apps)) }

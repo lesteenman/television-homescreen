@@ -5,7 +5,10 @@ ADB="${ADB:-$SDK/platform-tools/adb}"
 APP_ID="me.steenman.tvlauncher"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# mDNS instance-name prefix of the kitchen Chromecast HD (boreal).
+# Machine-specific settings stay out of git: scripts/local.env (git-ignored) may set
+# TV_MDNS_NAME, the mDNS instance-name prefix of the TV ("adb-<serial>"). Without it,
+# scripts/device.sh uses the only device advertising wireless debugging.
+[[ -f "$REPO_ROOT/scripts/local.env" ]] && source "$REPO_ROOT/scripts/local.env"
 TV_MDNS_NAME="${TV_MDNS_NAME:-}"
 
 die() {

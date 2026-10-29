@@ -4,10 +4,14 @@
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
 
-addr=$("$ADB" mdns services 2>/dev/null |
-  awk -v name="$TV_MDNS_NAME" 'index($1, name) == 1 && $2 ~ /_adb-tls-connect/ { print $3; exit }')
+services=$("$ADB" mdns services 2>/dev/null |
+  awk -v name="$TV_MDNS_NAME" 'index($1, name) == 1 && $2 ~ /_adb-tls-connect/ { print $1, $3 }' | sort -u)
+count=$(grep -c . <<<"$services" || true)
+[[ "$count" -le 1 ]] || die "several devices advertise wireless debugging; set TV_MDNS_NAME in scripts/local.env:
+$services"
+addr=$(awk '{ print $2 }' <<<"$services")
 
-[[ -n "$addr" ]] || die "no wireless-debugging service found for '$TV_MDNS_NAME'.
+[[ -n "$addr" ]] || die "no wireless-debugging service found${TV_MDNS_NAME:+ for '$TV_MDNS_NAME'}.
   On the TV: Settings > System > Developer options > Wireless debugging must be ON.
   If the TV was reset or unpaired, pair again: adb pair <ip>:<pairing-port> <code>"
 

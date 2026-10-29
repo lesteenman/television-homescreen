@@ -9,15 +9,29 @@
           "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
           "image": "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg"
         },
-        { "title": "Title-only tile", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
+        {
+          "title": "Spring",
+          "link": "https://www.youtube.com/watch?v=WhWc3b3KhnY",
+          "image": "https://i.ytimg.com/vi/WhWc3b3KhnY/maxresdefault.jpg"
+        },
+        {
+          "title": "Elephants Dream",
+          "link": "https://www.youtube.com/watch?v=TLkA0RELQ1g",
+          "image": "https://i.ytimg.com/vi/TLkA0RELQ1g/maxresdefault.jpg"
+        },
+        {
+          "title": "Tears of Steel",
+          "link": "https://www.youtube.com/watch?v=R6MlUcmOul8",
+          "image": "https://i.ytimg.com/vi/R6MlUcmOul8/maxresdefault.jpg"
+        },
+        {
+          "title": "Sintel",
+          "link": "https://www.youtube.com/watch?v=eRsGyueVLvQ"
+        },
         {
           "title": "Unsupported link",
-          "link": "https://example.invalid/falls-back-to-the-app",
-          "image": "https://i.scdn.co/image/ab67706f00000002e8ccdd567fff6a597b87586b"
-        },
-        { "title": "Show 4", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
-        { "title": "Show 5", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
-        { "title": "Show 6", "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" }
+          "link": "https://example.invalid/falls-back-to-the-app"
+        }
       ]
     }
   ]

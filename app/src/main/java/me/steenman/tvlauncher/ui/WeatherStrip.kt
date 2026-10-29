@@ -51,6 +51,8 @@ fun Weather(forecast: Forecast?, modifier: Modifier = Modifier) {
     if (forecast == null) return
     // Re-evaluated once a minute, but only recomposes the strip when the value flips.
     val stale by produceState(forecast.isStale(), forecast) {
+        // The state outlives a change of forecast, so a fresh forecast must reset it.
+        value = forecast.isStale()
         while (!value) {
             delay(60_000)
             value = forecast.isStale()

@@ -22,7 +22,11 @@ import me.steenman.tvlauncher.ui.WeatherStrip
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -93,6 +97,21 @@ class WeatherStripTest {
         compose.onNodeWithText("↑15°  ↓5°").assertIsDisplayed()
         compose.onNodeWithText(day(DayOfWeek.MONDAY)).assertIsDisplayed()
     }
+
+    @Test
+    fun freshForecastReplacesTheStaleLabel() {
+        val old = forecast.copy(fetchedAt = Instant.now().minus(Duration.ofHours(12)), days = forecastFromToday())
+        var shown by mutableStateOf(old)
+        compose.setContent { LauncherTheme { Weather(shown) } }
+        compose.onNodeWithText("Updated", substring = true).assertIsDisplayed()
+
+        shown = old.copy(fetchedAt = Instant.now())
+        compose.onNodeWithText("Updated", substring = true).assertDoesNotExist()
+    }
+
+    /** [Weather] uses the real date, so give it days starting today. */
+    private fun forecastFromToday() =
+        forecast.days.mapIndexed { i, day -> day.copy(date = LocalDate.now().plusDays(i.toLong())) }
 
     @Test
     fun hiddenWithoutData() {

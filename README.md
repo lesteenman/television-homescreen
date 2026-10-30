@@ -8,7 +8,7 @@ A replacement home screen for a Chromecast with Google TV: no ads and no recomme
 
 ## What it does
 
-- **Show rows.** One row per app with picked shows: the app's tile first, then its shows. Selecting a show opens it in the app by deep link. The list lives in [`shows.json`](app/src/main/assets/shows.json); artwork is downloaded once and cached.
+- **Show rows.** One row per app with picked shows: the app's tile first, then its shows. Selecting a show opens it in the app by deep link. Each TV fetches its own list from a secret gist, so shows change without an app update (see below); [`shows.json`](app/src/main/assets/shows.json) in the app is the fallback until the first fetch. Artwork is downloaded once and cached.
 - **Favorites and all apps.** Favorites can be added, removed and reordered with a long press on OK. Apps that have a show row aren't repeated in Favorites.
 - **Weather.** Today and the next four days from [Open-Meteo](https://open-meteo.com/), refreshed every 30 minutes and cached for offline use.
 - **Screensaver.** The header's Screensaver button, or BACK on the home screen, starts the normal Ambient screensaver.
@@ -30,7 +30,16 @@ Optional settings in `local.properties` (git-ignored):
 # Weather location; without these, the weather strip stays hidden.
 weather.latitude=52.10
 weather.longitude=5.18
+
+# Raw base URL of the show-list gist; without it, only the bundled shows.json is used.
+shows.url=https://gist.githubusercontent.com/<user>/<gist-id>/raw/
 ```
+
+### Changing the shows
+
+Each TV reads `<device name>.json` from the gist: the TV's name (Settings → System → About) in lower case, with spaces and other characters turned into `-`. "Living Room TV 2" reads `living-room-tv-2.json`. The format is the same as [`shows.json`](app/src/main/assets/shows.json).
+
+Edit the file on gist.github.com. The TV picks it up the next time the home screen opens at least 15 minutes after its last check; GitHub can add a few minutes of caching. A file that is missing or doesn't parse is ignored, and the TV keeps the last list it read (`adb logcat -s TvLauncher` shows why). Renaming a TV means renaming its file.
 
 Release builds are signed with a local key described by `keystore.properties` (git-ignored); see [`docs/release-signing.md`](docs/release-signing.md).
 

@@ -12,12 +12,16 @@ val keystoreProperties = Properties().apply {
 
 // The weather location is local-only too: weather.latitude / weather.longitude in local.properties.
 // Without them the launcher builds fine and simply shows no weather.
+// So is shows.url, the raw base URL of the show-list gist; without it only the bundled list is used.
 val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
 fun coordinate(name: String): String =
     localProperties.getProperty(name)?.trim()?.toDoubleOrNull()?.toString() ?: "Double.NaN"
+
+fun quoted(name: String): String =
+    "\"" + localProperties.getProperty(name)?.trim().orEmpty().replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
     namespace = "me.steenman.tvlauncher"
@@ -33,6 +37,7 @@ android {
 
         buildConfigField("double", "WEATHER_LATITUDE", coordinate("weather.latitude"))
         buildConfigField("double", "WEATHER_LONGITUDE", coordinate("weather.longitude"))
+        buildConfigField("String", "SHOW_LIST_URL", quoted("shows.url"))
     }
 
     signingConfigs {

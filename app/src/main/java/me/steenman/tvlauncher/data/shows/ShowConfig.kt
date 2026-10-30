@@ -42,5 +42,14 @@ object ShowConfig {
         }
     }
 
+    /**
+     * The URL of this TV's own list (design.md D1): [base] is the gist's raw URL ending in `/`,
+     * and the file is named after the device name, e.g. "Living Room TV 2" -> `living-room-tv-2.json`.
+     */
+    fun remoteUrl(base: String, deviceName: String): String {
+        val slug = deviceName.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "tv" }
+        return "${base.trimEnd('/')}/$slug.json"
+    }
+
     private fun JSONArray.objects(): List<JSONObject> = (0 until length()).map { getJSONObject(it) }
 }

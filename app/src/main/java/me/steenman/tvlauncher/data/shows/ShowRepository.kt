@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import android.util.AtomicFile
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -17,24 +18,52 @@ import java.net.URL
 import java.security.MessageDigest
 
 /**
- * The bundled show config, and its artwork: each image URL is downloaded once, cropped to the
- * tile size and kept on disk, so later starts and offline starts never download it again.
+ * The show config and its artwork. The config is this TV's remote list (design.md D1), kept on
+ * disk once fetched, or the bundled one before that. Each image URL is downloaded once, cropped to
+ * the tile size and kept on disk, so later starts and offline starts never download it again.
  */
 class ShowRepository(private val context: Context) {
 
     private val artworkDir = File(context.filesDir, "artwork")
+    private val cacheFile = AtomicFile(File(context.filesDir, CONFIG_ASSET))
 
+    /** The last fetched list, or the bundled one if none was fetched yet (or it no longer parses). */
     suspend fun loadConfig(): List<ShowRowConfig> = withContext(Dispatchers.IO) {
-        runCatching { ShowConfig.parse(context.assets.open(CONFIG_ASSET).use { it.readBytes().decodeToString() }) }
-            .onFailure { Log.w(TAG, "Ignoring $CONFIG_ASSET", it) }
-            .getOrDefault(emptyList())
+        runCatching { ShowConfig.parse(cacheFile.readFully().decodeToString()) }.getOrNull()
+            ?: runCatching { ShowConfig.parse(context.assets.open(CONFIG_ASSET).use { it.readBytes().decodeToString() }) }
+                .onFailure { Log.w(TAG, "Ignoring $CONFIG_ASSET", it) }
+                .getOrDefault(emptyList())
+    }
+
+    /**
+     * Fetches the list at [url] and keeps it on disk. Returns null if it couldn't be fetched or
+     * doesn't parse; the stored list is then left alone.
+     */
+    suspend fun fetchConfig(url: String): List<ShowRowConfig>? = withContext(Dispatchers.IO) {
+        runCatching {
+            val body = download(url).decodeToString()
+            val config = ShowConfig.parse(body)
+            store(body.encodeToByteArray())
+            config
+        }.onFailure { Log.w(TAG, "Show list fetch failed: $url", it) }.getOrNull()
+    }
+
+    private fun store(bytes: ByteArray) {
+        val out = cacheFile.startWrite()
+        try {
+            out.write(bytes)
+            cacheFile.finishWrite(out)
+        } catch (e: Exception) {
+            cacheFile.failWrite(out)
+            throw e
+        }
     }
 
     /** The artwork for [url] from disk, downloading it first if needed; null if that fails. */
     suspend fun artwork(url: String): ImageBitmap? = withContext(Dispatchers.IO) {
         val file = fileFor(url)
         runCatching {
-            if (!file.exists()) download(url, file)
+            if (!file.exists()) downloadTile(url, file)
             BitmapFactory.decodeFile(file.path)?.asImageBitmap()
         }.onFailure { Log.w(TAG, "Artwork failed: $url", it) }.getOrNull()
     }
@@ -45,16 +74,20 @@ class ShowRepository(private val context: Context) {
         artworkDir.listFiles()?.filter { it.name !in wanted }?.forEach { it.delete() }
     }
 
-    private fun download(url: String, target: File) {
+    private fun download(url: String): ByteArray {
         val connection = URL(url).openConnection() as HttpURLConnection
-        val source = try {
+        try {
             connection.connectTimeout = TIMEOUT_MS
             connection.readTimeout = TIMEOUT_MS
             check(connection.responseCode == HttpURLConnection.HTTP_OK) { "HTTP ${connection.responseCode}" }
-            connection.inputStream.use { it.readBytes() }
+            return connection.inputStream.use { it.readBytes() }
         } finally {
             connection.disconnect()
         }
+    }
+
+    private fun downloadTile(url: String, target: File) {
+        val source = download(url)
         val tile = cropToTile(checkNotNull(BitmapFactory.decodeByteArray(source, 0, source.size)) { "Not an image" })
         artworkDir.mkdirs()
         // Written under a temporary name, so a half-written file is never mistaken for a cached one.

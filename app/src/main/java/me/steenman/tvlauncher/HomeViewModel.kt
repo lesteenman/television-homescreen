@@ -1,6 +1,8 @@
 package me.steenman.tvlauncher
 
 import android.app.Application
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,6 +20,7 @@ import me.steenman.tvlauncher.data.AppRepository
 import me.steenman.tvlauncher.data.FavoritesStore
 import me.steenman.tvlauncher.data.LauncherApp
 import me.steenman.tvlauncher.data.shows.Show
+import me.steenman.tvlauncher.data.shows.ShowConfig
 import me.steenman.tvlauncher.data.shows.ShowRepository
 import me.steenman.tvlauncher.data.shows.ShowRowConfig
 import me.steenman.tvlauncher.data.weather.Forecast
@@ -60,12 +63,45 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         combine(apps, favoritesStore.favorites, showConfig, artwork, ::homeUiState)
             .stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
 
-    init {
-        viewModelScope.launch {
-            val config = showRepository.loadConfig()
-            showConfig.value = config
-            if (config.isNotEmpty()) showRepository.pruneArtwork(config.imageUrls())
-            loadArtwork()
+    private val showConfigLoad = viewModelScope.launch {
+        val config = showRepository.loadConfig()
+        showConfig.value = config
+        if (config.isNotEmpty()) showRepository.pruneArtwork(config.imageUrls())
+        loadArtwork()
+    }
+
+    /** This TV's own show list (design.md D1 of remote-show-list), or null to use only the stored one. */
+    private val showListUrl: String? = BuildConfig.SHOW_LIST_URL.takeIf { it.isNotBlank() }?.let { base ->
+        val name = Settings.Global.getString(application.contentResolver, Settings.Global.DEVICE_NAME)
+        ShowConfig.remoteUrl(base, name?.takeIf { it.isNotBlank() } ?: Build.MODEL)
+    }
+    private var showsFetchedAt: Instant? = null
+
+    /**
+     * Keeps the show list at most [SHOWS_REFRESH] old for as long as the caller is active, like
+     * [keepWeatherFresh]. A list that can't be fetched or parsed leaves the current one in place.
+     */
+    suspend fun keepShowsFresh() {
+        val url = showListUrl ?: return
+        showConfigLoad.join()
+        while (true) {
+            val due = showsFetchedAt?.plus(SHOWS_REFRESH)
+            val wait = due?.let { minOf(Duration.between(Instant.now(), it), SHOWS_REFRESH) }
+            if (wait != null && wait > Duration.ZERO) {
+                delay(wait.toMillis())
+                continue
+            }
+            val fresh = showRepository.fetchConfig(url)
+            if (fresh == null) {
+                delay(SHOWS_RETRY.toMillis())
+                continue
+            }
+            showsFetchedAt = Instant.now()
+            if (fresh != showConfig.value) {
+                showConfig.value = fresh
+                showRepository.pruneArtwork(fresh.imageUrls())
+                loadArtwork()
+            }
         }
     }
 
@@ -139,6 +175,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private companion object {
         val WEATHER_REFRESH: Duration = Duration.ofMinutes(30)
         val WEATHER_RETRY: Duration = Duration.ofMinutes(5)
+        val SHOWS_REFRESH: Duration = Duration.ofMinutes(15)
+        val SHOWS_RETRY: Duration = Duration.ofMinutes(5)
     }
 }
 

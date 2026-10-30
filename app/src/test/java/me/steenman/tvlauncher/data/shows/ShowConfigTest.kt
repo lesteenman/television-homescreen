@@ -63,6 +63,14 @@ class ShowConfigTest {
     }
 
     @Test
+    fun `each TV has its own file named after its device name`() {
+        val base = "https://gist.githubusercontent.com/u/abc/raw/"
+        assertEquals("${base}living-room-tv-2.json", ShowConfig.remoteUrl(base, "Living Room TV 2"))
+        assertEquals("${base}keuken.json", ShowConfig.remoteUrl(base.trimEnd('/'), "  Keuken! "))
+        assertEquals("${base}tv.json", ShowConfig.remoteUrl(base, "📺"))
+    }
+
+    @Test
     fun `bundled config files parse`() {
         listOf("src/main/assets/shows.json", "src/debug/assets/shows.json").forEach { path ->
             val rows = ShowConfig.parse(File(path).readText())

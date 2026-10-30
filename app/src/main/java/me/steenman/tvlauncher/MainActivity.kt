@@ -66,7 +66,10 @@ class MainActivity : ComponentActivity() {
         })
 
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) { viewModel.keepWeatherFresh() }
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                launch { viewModel.keepShowsFresh() }
+                viewModel.keepWeatherFresh()
+            }
         }
 
         setContent {

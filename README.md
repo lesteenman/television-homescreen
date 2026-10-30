@@ -1,6 +1,6 @@
 # Television homescreen
 
-A replacement home screen for a Chromecast with Google TV: no ads and no recommendations, just the apps and shows we actually use, the time and the weather. It runs on a Chromecast HD (Android 14) in our kitchen.
+A replacement home screen for a Chromecast with Google TV: no ads and no recommendations, just the apps and shows we actually use, the time and the weather. It runs on a Chromecast HD in the kitchen and a Google TV Streamer in the living room, both on Android 14.
 
 ![The home screen on the Google TV emulator](docs/screenshot.png)
 
@@ -50,7 +50,14 @@ All in [`scripts/`](scripts/), run from the repository root:
 | `takeover-c.sh` | Makes this the home screen on the TV (the approach in use) |
 | `restore-stock.sh` | Undoes every takeover change and returns the TV to the stock launcher |
 
-`device.sh` uses the only device advertising wireless debugging. With several, set `TV_MDNS_NAME=adb-<serial>` in `scripts/local.env` (git-ignored). Wireless debugging switches itself off on every reboot and has to be switched on again on the TV.
+With one TV on the network, the scripts find it on their own. With several, name it: `TV=living-room scripts/deploy.sh tv --release`. The names are mapped to the TVs' mDNS names in `scripts/local.env` (git-ignored, since those names contain serial numbers):
+
+```bash
+TV_MDNS_KITCHEN=adb-<serial>
+TV_MDNS_LIVING_ROOM=adb-<serial>
+```
+
+To pair a new TV, open Settings → System → Developer options → Wireless debugging → Pair device with pairing code on it, then run `adb pair <ip>:<port> <code>` with what it shows. Wireless debugging switches itself off on every reboot and has to be switched on again on the TV.
 
 ## Development
 

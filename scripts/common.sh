@@ -5,10 +5,18 @@ ADB="${ADB:-$SDK/platform-tools/adb}"
 APP_ID="me.steenman.tvlauncher"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Machine-specific settings stay out of git: scripts/local.env (git-ignored) may set
-# TV_MDNS_NAME, the mDNS instance-name prefix of the TV ("adb-<serial>"). Without it,
-# scripts/device.sh uses the only device advertising wireless debugging.
+# Which TV to use when there are several: TV=<name>, looked up as TV_MDNS_<NAME> (upper case,
+# dashes as underscores) in scripts/local.env, which is git-ignored because the mDNS names
+# ("adb-<serial>") contain serial numbers. For example:
+#   TV_MDNS_KITCHEN=adb-<serial>
+#   TV_MDNS_LIVING_ROOM=adb-<serial>
+# Without TV, scripts/device.sh uses the only device advertising wireless debugging.
 [[ -f "$REPO_ROOT/scripts/local.env" ]] && source "$REPO_ROOT/scripts/local.env"
+if [[ -n "${TV:-}" ]]; then
+  tv_var="TV_MDNS_$(tr 'a-z-' 'A-Z_' <<<"$TV")"
+  TV_MDNS_NAME="${!tv_var:-}"
+  [[ -n "$TV_MDNS_NAME" ]] || { echo "error: TV=$TV but $tv_var is not set in scripts/local.env" >&2; exit 1; }
+fi
 TV_MDNS_NAME="${TV_MDNS_NAME:-}"
 
 die() {

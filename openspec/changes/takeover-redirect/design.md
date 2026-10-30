@@ -31,7 +31,8 @@
 - [launcherx renames its home activity] → The class prefix no longer matches and the stock screen stays. Check after launcherx updates.
 - [Stock launcher runs in the background] → Its recommendations exist but are only on screen for a fraction of a second.
 
-- After the TV restarted (wireless debugging went off, as it does on every boot), it showed our launcher (checked by the user).
+- Living room Google TV Streamer (`kirkwood`), 2026-10-30, release build plus `scripts/takeover-c.sh`: HOME from Settings, 3 runs, ours resumed 117–138 ms after launcherx; BACK on home started Ambient and BACK woke it; a burst of BACKs out of Settings didn't; no "account mode is not valid" from Ambient. Baseline in `docs/living-room-baseline.md`. Reboot not tested there.
+- After the kitchen TV restarted (wireless debugging went off, as it does on every boot), it showed our launcher (checked by the user).
 
 ## Open Questions
 

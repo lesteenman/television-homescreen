@@ -7,7 +7,7 @@ source "$(dirname "$0")/common.sh"
 services=$("$ADB" mdns services 2>/dev/null |
   awk -v name="$TV_MDNS_NAME" 'index($1, name) == 1 && $2 ~ /_adb-tls-connect/ { print $1, $3 }' | sort -u)
 count=$(grep -c . <<<"$services" || true)
-[[ "$count" -le 1 ]] || die "several devices advertise wireless debugging; set TV_MDNS_NAME in scripts/local.env:
+[[ "$count" -le 1 ]] || die "several devices advertise wireless debugging; choose one with TV=<name> (see scripts/common.sh):
 $services"
 addr=$(awk '{ print $2 }' <<<"$services")
 

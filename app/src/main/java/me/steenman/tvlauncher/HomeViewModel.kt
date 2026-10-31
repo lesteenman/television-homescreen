@@ -6,6 +6,7 @@ import android.provider.Settings
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import me.steenman.tvlauncher.data.AppRepository
 import me.steenman.tvlauncher.data.FavoritesStore
 import me.steenman.tvlauncher.data.LauncherApp
@@ -57,17 +57,35 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Loaded artwork by image URL. Only grows when a new image arrives. */
     private val artwork = MutableStateFlow<Map<String, ImageBitmap>>(emptyMap())
-    private val artworkLoading = Mutex()
+
+    /**
+     * Requests for [artworkWorker]. Conflated: a request made while it's busy runs once more
+     * afterwards, so a list that changes mid-download still gets its new images.
+     */
+    private val artworkRequests = Channel<Unit>(Channel.CONFLATED)
 
     val uiState: StateFlow<HomeUiState> =
         combine(apps, favoritesStore.favorites, showConfig, artwork, ::homeUiState)
             .stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
 
     private val showConfigLoad = viewModelScope.launch {
-        val config = showRepository.loadConfig()
-        showConfig.value = config
-        if (config.isNotEmpty()) showRepository.pruneArtwork(config.imageUrls())
+        showConfig.value = showRepository.loadConfig()
         loadArtwork()
+    }
+
+    /**
+     * Prunes artwork no longer in the list and loads what isn't in memory yet: from disk, or
+     * downloaded once. One request at a time, so pruning never removes a download in progress.
+     * Failed images retry on the next request.
+     */
+    private val artworkWorker = viewModelScope.launch {
+        for (request in artworkRequests) {
+            val urls = showConfig.value.imageUrls()
+            if (urls.isNotEmpty()) showRepository.pruneArtwork(urls)
+            for (url in urls - artwork.value.keys) {
+                showRepository.artwork(url)?.let { image -> artwork.update { it + (url to image) } }
+            }
+        }
     }
 
     /** This TV's own show list (design.md D1 of remote-show-list), or null to use only the stored one. */
@@ -99,24 +117,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             showsFetchedAt = Instant.now()
             if (fresh != showConfig.value) {
                 showConfig.value = fresh
-                showRepository.pruneArtwork(fresh.imageUrls())
                 loadArtwork()
             }
         }
     }
 
-    /** Loads artwork that isn't in memory yet: from disk, or downloaded once. Failed images retry on the next call. */
     private fun loadArtwork() {
-        viewModelScope.launch {
-            if (!artworkLoading.tryLock()) return@launch
-            try {
-                for (url in showConfig.value.imageUrls() - artwork.value.keys) {
-                    showRepository.artwork(url)?.let { image -> artwork.update { it + (url to image) } }
-                }
-            } finally {
-                artworkLoading.unlock()
-            }
-        }
+        artworkRequests.trySend(Unit)
     }
 
     private fun List<ShowRowConfig>.imageUrls(): Set<String> =

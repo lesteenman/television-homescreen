@@ -7,13 +7,13 @@
 
 ## 2. Hosting
 
-- [ ] 2.1 Secret gist with a file per TV, starting from the bundled list (living room done; kitchen needs its device name)
+- [x] 2.1 Secret gist with a file per TV, starting from the bundled list (`living-room-tv-2.json`, `kitchen-television.json`)
 - [x] 2.2 README: how to edit a TV's shows, the file naming, and what happens on a renamed TV
 
 ## 3. Verify
 
 - [x] 3.1 Emulator: a gist edit shows up after a fetch; a broken file keeps the previous list; offline start shows the cached list
-- [ ] 3.2 Kitchen TV: release build shows its gist list
+- [ ] 3.2 Kitchen TV: release build shows its gist list (installed 2026-10-31 during playback, without opening it; the home screen is not checked yet)
 - [x] 3.3 Living room TV: release build shows its own list (2026-10-31, with a Prime Video row only it has)
 
 ## Notes

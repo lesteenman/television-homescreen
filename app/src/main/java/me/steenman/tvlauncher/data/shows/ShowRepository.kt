@@ -28,18 +28,18 @@ class ShowRepository(private val context: Context) {
     private val cacheFile = AtomicFile(File(context.filesDir, CONFIG_ASSET))
 
     /** The last fetched list, or the bundled one if none was fetched yet (or it no longer parses). */
-    suspend fun loadConfig(): List<ShowRowConfig> = withContext(Dispatchers.IO) {
+    suspend fun loadConfig(): ShowList = withContext(Dispatchers.IO) {
         runCatching { ShowConfig.parse(cacheFile.readFully().decodeToString()) }.getOrNull()
             ?: runCatching { ShowConfig.parse(context.assets.open(CONFIG_ASSET).use { it.readBytes().decodeToString() }) }
                 .onFailure { Log.w(TAG, "Ignoring $CONFIG_ASSET", it) }
-                .getOrDefault(emptyList())
+                .getOrDefault(ShowList(emptyList()))
     }
 
     /**
      * Fetches the list at [url] and keeps it on disk. Returns null if it couldn't be fetched or
      * doesn't parse; the stored list is then left alone.
      */
-    suspend fun fetchConfig(url: String): List<ShowRowConfig>? = withContext(Dispatchers.IO) {
+    suspend fun fetchConfig(url: String): ShowList? = withContext(Dispatchers.IO) {
         runCatching {
             val body = download(url).decodeToString()
             val config = ShowConfig.parse(body)

@@ -12,21 +12,30 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.steenman.tvlauncher.data.AppRepository
 import me.steenman.tvlauncher.data.FavoritesStore
 import me.steenman.tvlauncher.data.LauncherApp
+import me.steenman.tvlauncher.data.shows.Audience
+import me.steenman.tvlauncher.data.shows.AudienceOverride
 import me.steenman.tvlauncher.data.shows.Show
 import me.steenman.tvlauncher.data.shows.ShowConfig
+import me.steenman.tvlauncher.data.shows.ShowList
 import me.steenman.tvlauncher.data.shows.ShowRepository
 import me.steenman.tvlauncher.data.shows.ShowRowConfig
+import me.steenman.tvlauncher.data.shows.audienceAt
+import me.steenman.tvlauncher.data.shows.forAudience
 import me.steenman.tvlauncher.data.weather.Forecast
 import me.steenman.tvlauncher.data.weather.WeatherRepository
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 
 data class HomeUiState(
     /** Favorites as shown: apps that have a show row are left out. */
@@ -36,6 +45,8 @@ data class HomeUiState(
     val loaded: Boolean = false,
     /** Every stored favorite, including those hidden because they have a show row. */
     val favoriteKeys: Set<String> = emptySet(),
+    /** The mode the show rows are in, or null when the list has no schedule. */
+    val audience: Audience? = null,
 ) {
     fun isFavorite(app: LauncherApp): Boolean = app.key in favoriteKeys
 }
@@ -53,7 +64,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val showRepository = ShowRepository(application)
 
     private val apps = MutableStateFlow<List<LauncherApp>?>(null)
-    private val showConfig = MutableStateFlow<List<ShowRowConfig>>(emptyList())
+    private val showConfig = MutableStateFlow(ShowList(emptyList()))
+
+    /** The mode in effect; see [keepAudienceCurrent]. */
+    private val audience = MutableStateFlow<Audience?>(null)
+    private var audienceOverride: AudienceOverride? = null
 
     /** Loaded artwork by image URL. Only grows when a new image arrives. */
     private val artwork = MutableStateFlow<Map<String, ImageBitmap>>(emptyMap())
@@ -65,11 +80,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val artworkRequests = Channel<Unit>(Channel.CONFLATED)
 
     val uiState: StateFlow<HomeUiState> =
-        combine(apps, favoritesStore.favorites, showConfig, artwork, ::homeUiState)
+        combine(apps, favoritesStore.favorites, showConfig, artwork, audience) { apps, favorites, config, artwork, audience ->
+            homeUiState(apps, favorites, config.rows, artwork, audience)
+        }
             .stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
 
     private val showConfigLoad = viewModelScope.launch {
         showConfig.value = showRepository.loadConfig()
+        updateAudience()
         loadArtwork()
     }
 
@@ -117,17 +135,51 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             showsFetchedAt = Instant.now()
             if (fresh != showConfig.value) {
                 showConfig.value = fresh
+                updateAudience()
                 loadArtwork()
             }
         }
+    }
+
+    /**
+     * Keeps the mode right for as long as the caller is active: recomputed now, and again at each
+     * scheduled switch (kids-and-grown-ups design.md D4). An override ends at the next switch.
+     */
+    suspend fun keepAudienceCurrent() {
+        showConfig.map { it.schedule }.distinctUntilChanged().collectLatest { schedule ->
+            updateAudience()
+            if (schedule == null) return@collectLatest
+            while (true) {
+                val now = LocalDateTime.now()
+                // A second late, so the switch has certainly happened when it's recomputed.
+                delay(Duration.between(now, schedule.nextSwitch(now)).toMillis() + 1_000)
+                updateAudience()
+            }
+        }
+    }
+
+    /** Switches to the other mode until the next scheduled switch, or back to the scheduled one. */
+    fun toggleAudience() {
+        val schedule = showConfig.value.schedule ?: return
+        val now = LocalDateTime.now()
+        val current = schedule.audienceAt(now, audienceOverride) ?: return
+        audienceOverride =
+            if (current != schedule.audienceAt(now.toLocalTime())) null
+            else AudienceOverride(current.other, until = schedule.nextSwitch(now))
+        updateAudience()
+    }
+
+    private fun updateAudience() {
+        audience.value = showConfig.value.schedule.audienceAt(LocalDateTime.now(), audienceOverride)
     }
 
     private fun loadArtwork() {
         artworkRequests.trySend(Unit)
     }
 
-    private fun List<ShowRowConfig>.imageUrls(): Set<String> =
-        flatMap { row -> row.shows.mapNotNull { it.image } }.toSet()
+    /** Artwork for both modes, so switching never needs a download. */
+    private fun ShowList.imageUrls(): Set<String> =
+        rows.flatMap { row -> row.shows.mapNotNull { it.image } }.toSet()
 
     private val weatherRepository =
         WeatherRepository(application, BuildConfig.WEATHER_LATITUDE, BuildConfig.WEATHER_LONGITUDE)
@@ -193,12 +245,14 @@ internal fun homeUiState(
     favoriteKeys: List<String>,
     config: List<ShowRowConfig>,
     artwork: Map<String, ImageBitmap>,
+    audience: Audience? = null,
 ): HomeUiState {
     val installed = apps.orEmpty()
     val byKey = installed.associateBy { it.key }
     val byPackage = installed.associateBy { it.packageName }
     // Rows for apps that aren't installed, or without shows, are hidden.
-    val showRows = config.mapNotNull { row ->
+    // Rows left without shows in this mode are hidden like empty rows, so their app is a favorite again.
+    val showRows = config.forAudience(audience).mapNotNull { row ->
         val app = byPackage[row.app] ?: return@mapNotNull null
         ShowRow(app, row.shows.map { ShowTile(it, it.image?.let(artwork::get)) })
             .takeIf { it.shows.isNotEmpty() }
@@ -211,5 +265,6 @@ internal fun homeUiState(
         apps = installed,
         loaded = apps != null,
         favoriteKeys = favoriteKeys.toSet(),
+        audience = audience,
     )
 }

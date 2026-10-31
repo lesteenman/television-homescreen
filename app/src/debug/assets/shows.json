@@ -1,5 +1,9 @@
 {
   "version": 1,
+  "schedule": {
+    "kids": "05:00",
+    "grown-ups": "19:00"
+  },
   "rows": [
     {
       "app": "com.google.android.youtube.tv",
@@ -7,22 +11,26 @@
         {
           "title": "Big Buck Bunny",
           "link": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
-          "image": "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg"
+          "image": "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg",
+          "for": "kids"
         },
         {
           "title": "Spring",
           "link": "https://www.youtube.com/watch?v=WhWc3b3KhnY",
-          "image": "https://i.ytimg.com/vi/WhWc3b3KhnY/maxresdefault.jpg"
+          "image": "https://i.ytimg.com/vi/WhWc3b3KhnY/maxresdefault.jpg",
+          "for": "kids"
         },
         {
           "title": "Elephants Dream",
           "link": "https://www.youtube.com/watch?v=TLkA0RELQ1g",
-          "image": "https://i.ytimg.com/vi/TLkA0RELQ1g/maxresdefault.jpg"
+          "image": "https://i.ytimg.com/vi/TLkA0RELQ1g/maxresdefault.jpg",
+          "for": "grown-ups"
         },
         {
           "title": "Tears of Steel",
           "link": "https://www.youtube.com/watch?v=R6MlUcmOul8",
-          "image": "https://i.ytimg.com/vi/R6MlUcmOul8/maxresdefault.jpg"
+          "image": "https://i.ytimg.com/vi/R6MlUcmOul8/maxresdefault.jpg",
+          "for": "grown-ups"
         },
         {
           "title": "Sintel",

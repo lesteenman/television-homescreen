@@ -1,9 +1,11 @@
 package me.steenman.tvlauncher.data.shows
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.File
+import java.time.LocalTime
 
 class ShowConfigTest {
 
@@ -25,7 +27,7 @@ class ShowConfigTest {
               ]
             }
             """,
-        )
+        ).rows
 
         assertEquals(
             listOf(
@@ -50,7 +52,7 @@ class ShowConfigTest {
               {"app": "p", "colour": "red", "shows": [{"title": "T", "link": "l", "image": "", "year": 2020}]}
             ]}
             """,
-        )
+        ).rows
         assertEquals(listOf(ShowRowConfig("p", listOf(Show("T", "l", null)))), rows)
     }
 
@@ -60,6 +62,41 @@ class ShowConfigTest {
         assertThrows(Exception::class.java) { ShowConfig.parse("""{"rows": []}""") }
         assertThrows(Exception::class.java) { ShowConfig.parse("""{"version": 1, "rows": [{"shows": []}]}""") }
         assertThrows(Exception::class.java) { ShowConfig.parse("not json") }
+    }
+
+    @Test
+    fun `parses audiences and the schedule`() {
+        val list = ShowConfig.parse(
+            """
+            {"version": 1, "schedule": {"kids": "05:00", "grown-ups": "19:00"}, "rows": [
+              {"app": "p", "shows": [
+                {"title": "K", "link": "k", "for": "kids"},
+                {"title": "G", "link": "g", "for": "grown-ups"},
+                {"title": "B", "link": "b"}
+              ]}
+            ]}
+            """,
+        )
+        assertEquals(Schedule(LocalTime.of(5, 0), LocalTime.of(19, 0)), list.schedule)
+        assertEquals(listOf(Audience.KIDS, Audience.GROWN_UPS, null), list.rows.single().shows.map { it.audience })
+    }
+
+    @Test
+    fun `a list without a schedule has none`() {
+        assertNull(ShowConfig.parse("""{"version": 1, "rows": []}""").schedule)
+    }
+
+    @Test
+    fun `rejects unknown audiences and broken schedules`() {
+        val row = """{"app": "p", "shows": [{"title": "T", "link": "l", "for": "teens"}]}"""
+        assertThrows(IllegalArgumentException::class.java) { ShowConfig.parse("""{"version": 1, "rows": [$row]}""") }
+        listOf(
+            """{"kids": "5 uur", "grown-ups": "19:00"}""",
+            """{"kids": "05:00"}""",
+            """{"kids": "19:00", "grown-ups": "19:00"}""",
+        ).forEach { schedule ->
+            assertThrows(Exception::class.java) { ShowConfig.parse("""{"version": 1, "schedule": $schedule, "rows": []}""") }
+        }
     }
 
     @Test
@@ -73,7 +110,7 @@ class ShowConfigTest {
     @Test
     fun `bundled config files parse`() {
         listOf("src/main/assets/shows.json", "src/debug/assets/shows.json").forEach { path ->
-            val rows = ShowConfig.parse(File(path).readText())
+            val rows = ShowConfig.parse(File(path).readText()).rows
             assert(rows.isNotEmpty()) { "$path has no rows" }
         }
     }

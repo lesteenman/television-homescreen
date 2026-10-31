@@ -16,11 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -69,15 +71,45 @@ internal fun WeatherStrip(forecast: Forecast, today: LocalDate, stale: Boolean, 
     val days = forecast.days.filter { !it.date.isBefore(today) }
     val todayForecast = days.firstOrNull()?.takeIf { it.date == today } ?: return
 
-    Row(
-        modifier = modifier.testTag(WEATHER_STRIP_TAG),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
+    FittingRow(spacing = 20.dp, modifier = modifier.testTag(WEATHER_STRIP_TAG)) {
         Today(forecast, todayForecast, stale)
         if (days.size > 1) {
             Divider()
             days.drop(1).take(FOLLOWING_DAYS).forEach { Day(it) }
+        }
+    }
+}
+
+/**
+ * A row, vertically centred, that leaves out trailing children that don't fit its width, so a
+ * crowded header loses the last forecast days instead of overlapping the clock. The first child
+ * (today) is always placed; the divider (second child) only when a day follows it.
+ */
+@Composable
+private fun FittingRow(spacing: Dp, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Layout(content, modifier) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0)) }
+        val gap = spacing.roundToPx()
+        var count = 0
+        var width = 0
+        for (placeable in placeables) {
+            val next = width + (if (count > 0) gap else 0) + placeable.width
+            if (count > 0 && next > constraints.maxWidth) break
+            width = next
+            count++
+        }
+        if (count == 2) {
+            count = 1
+            width = placeables[0].width
+        }
+        val shown = placeables.take(count)
+        val height = shown.maxOfOrNull { it.height } ?: 0
+        layout(width.coerceIn(constraints.minWidth, constraints.maxWidth), height) {
+            var x = 0
+            shown.forEach {
+                it.placeRelative(x, (height - it.height) / 2)
+                x += it.width + gap
+            }
         }
     }
 }

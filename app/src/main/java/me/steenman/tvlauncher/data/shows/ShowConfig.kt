@@ -2,6 +2,10 @@ package me.steenman.tvlauncher.data.shows
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalTime
+
+/** A TV's show list: its rows, and its schedule for kids and grown-ups if it has one. */
+data class ShowList(val rows: List<ShowRowConfig>, val schedule: Schedule? = null)
 
 /** One app's row of shows, in the order of the config file. */
 data class ShowRowConfig(
@@ -16,6 +20,8 @@ data class Show(
     val link: String,
     /** Artwork URL (16:9 looks best), or null for a title-only tile. */
     val image: String?,
+    /** Who the show is for; null for both. */
+    val audience: Audience? = null,
 )
 
 /** The `shows.json` format (design.md D2). It doesn't care where the text came from. */
@@ -24,11 +30,14 @@ object ShowConfig {
     const val VERSION = 1
 
     /** Throws on an invalid file or another [VERSION]; unknown fields are ignored. */
-    fun parse(json: String): List<ShowRowConfig> {
+    fun parse(json: String): ShowList {
         val root = JSONObject(json)
         val version = root.getInt("version")
         require(version == VERSION) { "Unsupported shows.json version $version" }
-        return root.getJSONArray("rows").objects().map { row ->
+        val schedule = root.optJSONObject("schedule")?.let {
+            Schedule(kids = LocalTime.parse(it.getString("kids")), grownUps = LocalTime.parse(it.getString("grown-ups")))
+        }
+        val rows = root.getJSONArray("rows").objects().map { row ->
             ShowRowConfig(
                 app = row.getString("app"),
                 shows = row.getJSONArray("shows").objects().map { show ->
@@ -36,10 +45,12 @@ object ShowConfig {
                         title = show.getString("title"),
                         link = show.getString("link"),
                         image = show.optString("image").takeIf { it.isNotBlank() },
+                        audience = show.optString("for").takeIf { it.isNotBlank() }?.let(Audience::fromKey),
                     )
                 },
             )
         }
+        return ShowList(rows, schedule)
     }
 
     /**

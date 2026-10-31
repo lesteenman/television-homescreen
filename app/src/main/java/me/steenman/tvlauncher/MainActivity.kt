@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 launch { viewModel.keepShowsFresh() }
+                launch { viewModel.keepAudienceCurrent() }
                 viewModel.keepWeatherFresh()
             }
         }
@@ -99,6 +100,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         null
                     },
+                    onToggleAudience = viewModel::toggleAudience,
                 )
             }
         }

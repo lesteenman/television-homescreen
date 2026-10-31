@@ -39,6 +39,14 @@ shows.url=https://gist.githubusercontent.com/<user>/<gist-id>/raw/
 
 Each TV reads `<device name>.json` from the gist: the TV's name (Settings → System → About) in lower case, with spaces and other characters turned into `-`. "Living Room TV 2" reads `living-room-tv-2.json`. The format is the same as [`shows.json`](app/src/main/assets/shows.json).
 
+A list can split the shows between kids and grown-ups. Mark a show with `"for": "kids"` or `"for": "grown-ups"` (unmarked shows are for both), and give the list a schedule:
+
+```json
+{ "version": 1, "schedule": { "kids": "05:00", "grown-ups": "19:00" }, "rows": [ … ] }
+```
+
+The home screen then shows only the current mode's shows, and a Kids / Grown-ups button in the header switches to the other mode until the next switch time. Without a schedule every show is shown and there is no button.
+
 Edit the file on gist.github.com. The TV picks it up the next time the home screen opens at least 15 minutes after its last check; GitHub can add a few minutes of caching. A file that is missing or doesn't parse is ignored, and the TV keeps the last list it read (`adb logcat -s TvLauncher` shows why). Renaming a TV means renaming its file.
 
 Release builds are signed with a local key described by `keystore.properties` (git-ignored); see [`docs/release-signing.md`](docs/release-signing.md).

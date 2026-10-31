@@ -32,6 +32,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import me.steenman.tvlauncher.HomeUiState
 import me.steenman.tvlauncher.R
+import me.steenman.tvlauncher.data.shows.Audience
 import me.steenman.tvlauncher.data.LauncherApp
 import me.steenman.tvlauncher.data.shows.Show
 import me.steenman.tvlauncher.data.weather.Forecast
@@ -57,6 +58,7 @@ fun HomeScreen(
     onMoveFavorite: (LauncherApp, Int) -> Unit,
     /** Null when this device has no way to start the screensaver; the button is then hidden. */
     onStartScreensaver: (() -> Unit)? = null,
+    onToggleAudience: () -> Unit = {},
 ) {
     val gridState = rememberLazyGridState()
     val initialFocus = remember { FocusRequester() }
@@ -83,7 +85,9 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(TileSpacing),
             modifier = Modifier.fillMaxSize(),
         ) {
-            fullWidth("header") { Header(weather, onOpenSettings, onStartScreensaver) }
+            fullWidth("header") {
+                Header(weather, state.audience, onOpenSettings, onStartScreensaver, onToggleAudience)
+            }
 
             // Apps with shows come first; the remaining favorites follow under their own title.
             state.showRows.forEachIndexed { index, row ->
@@ -160,7 +164,13 @@ private fun LazyGridScope.appTiles(
 }
 
 @Composable
-private fun Header(weather: Forecast?, onOpenSettings: () -> Unit, onStartScreensaver: (() -> Unit)?) {
+private fun Header(
+    weather: Forecast?,
+    audience: Audience?,
+    onOpenSettings: () -> Unit,
+    onStartScreensaver: (() -> Unit)?,
+    onToggleAudience: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,8 +181,16 @@ private fun Header(weather: Forecast?, onOpenSettings: () -> Unit, onStartScreen
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             HeaderButton(stringResource(R.string.settings), onOpenSettings)
             onStartScreensaver?.let { HeaderButton(stringResource(R.string.screensaver), it) }
+            // Shows the mode in effect; pressing it switches to the other until the next scheduled switch.
+            audience?.let {
+                val label = if (it == Audience.KIDS) R.string.audience_kids else R.string.audience_grown_ups
+                HeaderButton(stringResource(label), onToggleAudience)
+            }
         }
-        Weather(weather)
+        // The weather takes the space between the buttons and the clock, dropping days that don't fit.
+        Box(Modifier.weight(1f).padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
+            Weather(weather)
+        }
         Clock()
     }
 }

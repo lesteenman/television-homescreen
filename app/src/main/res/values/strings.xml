@@ -4,6 +4,8 @@
     <string name="all_apps">All apps</string>
     <string name="settings">Settings</string>
     <string name="screensaver">Screensaver</string>
+    <string name="audience_kids">Kids</string>
+    <string name="audience_grown_ups">Grown-ups</string>
     <string name="add_favorite">Add to favorites</string>
     <string name="remove_favorite">Remove from favorites</string>
     <string name="move_left">Move left</string>

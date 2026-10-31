@@ -1,5 +1,9 @@
 {
   "version": 1,
+  "schedule": {
+    "kids": "05:00",
+    "grown-ups": "19:00"
+  },
   "rows": [
     {
       "app": "com.netflix.ninja",
@@ -7,22 +11,26 @@
         {
           "title": "Peter Rabbit",
           "link": "https://www.netflix.com/title/81006960",
-          "image": "https://image.tmdb.org/t/p/w780/gfGZGimQn06kIT4AmtbClwXepT6.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/gfGZGimQn06kIT4AmtbClwXepT6.jpg",
+          "for": "kids"
         },
         {
           "title": "Gabby's Dollhouse",
           "link": "https://www.netflix.com/title/81009946",
-          "image": "https://image.tmdb.org/t/p/w780/5MAJGEDqLL4uZXLdjdiRzWFaoyx.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/5MAJGEDqLL4uZXLdjdiRzWFaoyx.jpg",
+          "for": "kids"
         },
         {
           "title": "The Smurfs",
           "link": "https://www.netflix.com/title/81330960",
-          "image": "https://image.tmdb.org/t/p/w780/1ccjng6EJoVIxpImNObA8ZaPtvE.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/1ccjng6EJoVIxpImNObA8ZaPtvE.jpg",
+          "for": "kids"
         },
         {
           "title": "PAW Patrol",
           "link": "https://www.netflix.com/title/80026226",
-          "image": "https://image.tmdb.org/t/p/w780/aHtAJdzkuS1bGENzkplvFraoh5W.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/aHtAJdzkuS1bGENzkplvFraoh5W.jpg",
+          "for": "kids"
         }
       ]
     },
@@ -32,12 +40,20 @@
         {
           "title": "Spidey and His Amazing Friends",
           "link": "https://www.disneyplus.com/browse/entity-cc992c16-e126-4a2b-a039-0b1e7106b727",
-          "image": "https://image.tmdb.org/t/p/w780/ulSptOvjCKc6KEBatu5sIpWxQCT.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/ulSptOvjCKc6KEBatu5sIpWxQCT.jpg",
+          "for": "kids"
         },
         {
           "title": "Bluey",
           "link": "https://www.disneyplus.com/browse/entity-fa6973b9-e7cf-49fb-81a2-d4908e4bf694",
-          "image": "https://image.tmdb.org/t/p/w780/6kVosC1wgVXJghUrPYBMoo9MA5D.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/6kVosC1wgVXJghUrPYBMoo9MA5D.jpg",
+          "for": "kids"
+        },
+        {
+          "title": "Malcolm in the Middle",
+          "link": "https://www.disneyplus.com/browse/entity-ca1ac46e-9883-4125-a6e8-97efce9a2bf5",
+          "image": "https://image.tmdb.org/t/p/w780/1RPtEpOsi3WJdoS52X5u76Bggf7.jpg",
+          "for": "grown-ups"
         }
       ]
     },
@@ -45,19 +61,28 @@
       "app": "nl.rtl.videoland.v2",
       "shows": [
         {
+          "title": "Woezel & Pip",
+          "link": "https://v2.videoland.com/woezel-pip-de-serie-p_4489",
+          "image": "https://image.tmdb.org/t/p/w780/jDSsYSyH9z0TIHtav4CV1rSu7Ya.jpg",
+          "for": "kids"
+        },
+        {
           "title": "Dora and Friends",
           "link": "https://v2.videoland.com/dora-and-friends-p_365",
-          "image": "https://image.tmdb.org/t/p/w780/mzkdfs1aw10KMcHvljCYGDUD5nm.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/mzkdfs1aw10KMcHvljCYGDUD5nm.jpg",
+          "for": "kids"
         },
         {
           "title": "Dora the Explorer",
           "link": "https://v2.videoland.com/dora-the-explorer-p_128",
-          "image": "https://image.tmdb.org/t/p/w780/cfLtfRIivZnoZH25dtUMwaiA5ZH.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/cfLtfRIivZnoZH25dtUMwaiA5ZH.jpg",
+          "for": "kids"
         },
         {
           "title": "Go, Diego, Go!",
           "link": "https://v2.videoland.com/go-diego-go-p_4183",
-          "image": "https://image.tmdb.org/t/p/w780/sUHyjvpPglOVZfDb1JNzanbe6qZ.jpg"
+          "image": "https://image.tmdb.org/t/p/w780/sUHyjvpPglOVZfDb1JNzanbe6qZ.jpg",
+          "for": "kids"
         }
       ]
     }

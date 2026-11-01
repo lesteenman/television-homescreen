@@ -64,7 +64,7 @@ All in [`scripts/`](scripts/), run from the repository root:
 | `emulator.sh` | Creates (once) and boots the `gtv-34` Google TV emulator |
 | `deploy.sh [tv\|emulator] [--release]` | Builds, installs and starts the launcher |
 | `device.sh` | Connects to the TV over wireless debugging, finding its port via mDNS |
-| `takeover-c.sh` | Makes this the home screen on the TV (the approach in use) |
+| `takeover-c.sh` | Makes this the home screen on the TV (the approach in use), and lets the stock launcher keep opening Netflix and YouTube for the remote's buttons |
 | `restore-stock.sh` | Undoes every takeover change and returns the TV to the stock launcher |
 
 With one TV on the network, the scripts find it on their own. With several, name it: `TV=living-room scripts/deploy.sh tv --release`. The names are mapped to the TVs' mDNS names in `scripts/local.env` (git-ignored, since those names contain serial numbers):

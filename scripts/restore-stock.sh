@@ -11,6 +11,7 @@ tv pm default-state --user 0 "$SETUP_WRAITH" >/dev/null
 
 echo "Giving the HOME role back to the stock launcher (E)..."
 tv cmd role add-role-holder "$HOME_ROLE" "$STOCK_LAUNCHER"
+tv appops set "$STOCK_LAUNCHER" SYSTEM_ALERT_WINDOW default
 
 echo "Removing our accessibility service (C)..."
 services=$(tv settings get secure enabled_accessibility_services)

@@ -19,6 +19,11 @@ tv cmd role add-role-holder "$HOME_ROLE" "$APP_ID"
 tv pm default-state --user 0 "$STOCK_LAUNCHER" >/dev/null
 tv pm default-state --user 0 "$SETUP_WRAITH" >/dev/null
 
+# The stock launcher opens Netflix and YouTube for the remote's buttons. With its home screen
+# no longer in front, Android 14 blocks those starts as background launches; "display over
+# other apps" exempts it.
+tv appops set "$STOCK_LAUNCHER" SYSTEM_ALERT_WINDOW allow
+
 tv input keyevent KEYCODE_HOME
 sleep 3
 echo "Approach C applied:"

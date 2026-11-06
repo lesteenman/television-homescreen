@@ -57,8 +57,9 @@ fun HomeScreen(
     onMoveFavorite: (LauncherApp, Int) -> Unit,
     /** Null when this device has no way to start the screensaver; the button is then hidden. */
     onStartScreensaver: (() -> Unit)? = null,
-    /** Null when no app store can be opened on this device; the button is then hidden. */
-    onOpenAppStore: (() -> Unit)? = null,
+    /** The store's tile at the end of All apps; null when no store can be opened on this device. */
+    appStore: LauncherApp? = null,
+    onOpenAppStore: () -> Unit = {},
 ) {
     val gridState = rememberLazyGridState()
     val initialFocus = remember { FocusRequester() }
@@ -85,7 +86,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(TileSpacing),
             modifier = Modifier.fillMaxSize(),
         ) {
-            fullWidth("header") { Header(weather, onOpenSettings, onStartScreensaver, onOpenAppStore) }
+            fullWidth("header") { Header(weather, onOpenSettings, onStartScreensaver) }
 
             // Apps with shows come first; the remaining favorites follow under their own title.
             state.showRows.forEachIndexed { index, row ->
@@ -123,6 +124,14 @@ fun HomeScreen(
                 onLaunch = onLaunch,
                 onMenu = { menuFor = it },
             )
+
+            // Google TV doesn't list the store among its TV apps, so it gets its own tile here
+            // (unless a device does list it, which would show it twice).
+            appStore?.takeIf { store -> state.apps.none { it.packageName == store.packageName } }?.let { store ->
+                item(key = "app-store") {
+                    AppCard(app = store, onClick = onOpenAppStore, onLongClick = {})
+                }
+            }
         }
     }
 
@@ -162,12 +171,7 @@ private fun LazyGridScope.appTiles(
 }
 
 @Composable
-private fun Header(
-    weather: Forecast?,
-    onOpenSettings: () -> Unit,
-    onStartScreensaver: (() -> Unit)?,
-    onOpenAppStore: (() -> Unit)?,
-) {
+private fun Header(weather: Forecast?, onOpenSettings: () -> Unit, onStartScreensaver: (() -> Unit)?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -178,7 +182,6 @@ private fun Header(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             HeaderButton(stringResource(R.string.settings), onOpenSettings)
             onStartScreensaver?.let { HeaderButton(stringResource(R.string.screensaver), it) }
-            onOpenAppStore?.let { HeaderButton(stringResource(R.string.app_store), it) }
         }
         Weather(weather)
         Clock()

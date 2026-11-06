@@ -4,8 +4,8 @@ There is no way to install new apps from our launcher. The stock Google TV home 
 
 ## What Changes
 
-- A **Play Store** button in the header, next to Settings and Screensaver.
-- It opens the Play Store through the first of several intents that resolves, and hides itself when none does.
+- A **Play Store** tile at the end of All apps, with the store's own banner where it has one.
+- It opens the Play Store through the first of several intents that resolves, and is left out when none does.
 - A `<queries>` entry so the launcher can see the Play Store package and other app stores.
 
 ## Capabilities
@@ -15,5 +15,5 @@ There is no way to install new apps from our launcher. The stock Google TV home 
 
 ## Impact
 
-- Code: new `AppStore`, header layout in `HomeScreen`, wiring in `MainActivity`, manifest `<queries>`.
+- Code: new `AppStore`, `AppRepository.loadAppStore`, the tile in `HomeScreen`, wiring in `HomeViewModel` and `MainActivity`, manifest `<queries>`.
 - No new permissions.

@@ -11,7 +11,7 @@ Not yet checked on a TV: which activities `com.android.vending` exports there. T
 - One obvious way to open the store and install an app.
 
 **Non-Goals:**
-- Showing the store as a tile in All apps, or listing store recommendations.
+- Making the store a favorite, or listing store recommendations.
 
 ## Decisions
 
@@ -27,8 +27,12 @@ Not yet checked on a TV: which activities `com.android.vending` exports there. T
 ### D2: Package visibility
 The manifest's `<queries>` only covered LEANBACK_LAUNCHER intents and the sleep action, so the Play Store's other activities were invisible to us. Added `<package android:name="com.android.vending"/>` and an intent for MAIN + APP_MARKET.
 
-### D3: Header button
-Same as the Screensaver button (screensaver-shortcut D2): a third header button, labelled "Play Store", hidden when `AppStore.intent` is null. Resolved once in `onCreate`.
+### D3: Its own tile at the end of All apps
+- Decided 2026-11-06 (Erik): not in the header; a tile below all apps.
+- The tile uses the banner, icon and label of the activity the store intent resolves to, like any app, or the label "Play Store" when that's unknown (a selector the system can't resolve to one activity).
+- Resolved on every resume with the app list, so it appears after a store is installed or enabled. Cached while it resolves to the same activity.
+- Long press does nothing: the store isn't in the app list, so it couldn't be shown as a favorite.
+- Left out if the store does appear in All apps on some device, so it isn't shown twice.
 
 ## Risks / Trade-offs
 

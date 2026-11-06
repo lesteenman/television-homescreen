@@ -1,10 +1,12 @@
 package me.steenman.tvlauncher
 
+import android.content.ComponentName
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import me.steenman.tvlauncher.data.LauncherApp
 import me.steenman.tvlauncher.ui.HomeScreen
 import me.steenman.tvlauncher.ui.LauncherTheme
 import org.junit.Assert.assertEquals
@@ -14,12 +16,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class AppStoreButtonTest {
+class AppStoreTileTest {
 
     @get:Rule
     val compose = createComposeRule()
 
-    private fun show(onOpenAppStore: (() -> Unit)?) = compose.setContent {
+    private val store = LauncherApp(ComponentName(AppStore.PLAY_STORE, "Store"), "Play Store", null, null)
+
+    private fun show(appStore: LauncherApp?, onOpenAppStore: () -> Unit = {}) = compose.setContent {
         LauncherTheme {
             HomeScreen(
                 state = HomeUiState(loaded = true),
@@ -32,21 +36,22 @@ class AppStoreButtonTest {
                 onAddFavorite = {},
                 onRemoveFavorite = {},
                 onMoveFavorite = { _, _ -> },
+                appStore = appStore,
                 onOpenAppStore = onOpenAppStore,
             )
         }
     }
 
     @Test
-    fun buttonShownAndClickableWhenAvailable() {
+    fun tileShownAndOpensStore() {
         var opened = 0
-        show { opened++ }
+        show(store) { opened++ }
         compose.onNodeWithText("Play Store").performClick()
         assertEquals(1, opened)
     }
 
     @Test
-    fun buttonHiddenWhenUnavailable() {
+    fun tileHiddenWhenUnavailable() {
         show(null)
         compose.onNodeWithText("Play Store").assertDoesNotExist()
     }

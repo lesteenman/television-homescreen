@@ -21,6 +21,12 @@
         <intent>
             <action android:name="com.google.android.pano.action.SLEEP" />
         </intent>
+        <!-- The Play Store, which has no LEANBACK_LAUNCHER entry on Google TV (see AppStore). -->
+        <package android:name="com.android.vending" />
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.APP_MARKET" />
+        </intent>
     </queries>
 
     <application

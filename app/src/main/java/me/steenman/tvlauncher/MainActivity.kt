@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val screensaverAvailable = Screensaver.isAvailable(packageManager)
+        val appStoreIntent = AppStore.intent(packageManager)
 
         // BACK on the home screen never leaves it; there is nothing "behind" a launcher.
         // It starts the screensaver instead, when the guard allows it.
@@ -96,6 +97,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         null
                     },
+                    onOpenAppStore = appStoreIntent?.let { intent -> { startSafely(Intent(intent)) } },
                 )
             }
         }

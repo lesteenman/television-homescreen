@@ -57,6 +57,8 @@ fun HomeScreen(
     onMoveFavorite: (LauncherApp, Int) -> Unit,
     /** Null when this device has no way to start the screensaver; the button is then hidden. */
     onStartScreensaver: (() -> Unit)? = null,
+    /** Null when no app store can be opened on this device; the button is then hidden. */
+    onOpenAppStore: (() -> Unit)? = null,
 ) {
     val gridState = rememberLazyGridState()
     val initialFocus = remember { FocusRequester() }
@@ -83,7 +85,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(TileSpacing),
             modifier = Modifier.fillMaxSize(),
         ) {
-            fullWidth("header") { Header(weather, onOpenSettings, onStartScreensaver) }
+            fullWidth("header") { Header(weather, onOpenSettings, onStartScreensaver, onOpenAppStore) }
 
             // Apps with shows come first; the remaining favorites follow under their own title.
             state.showRows.forEachIndexed { index, row ->
@@ -160,7 +162,12 @@ private fun LazyGridScope.appTiles(
 }
 
 @Composable
-private fun Header(weather: Forecast?, onOpenSettings: () -> Unit, onStartScreensaver: (() -> Unit)?) {
+private fun Header(
+    weather: Forecast?,
+    onOpenSettings: () -> Unit,
+    onStartScreensaver: (() -> Unit)?,
+    onOpenAppStore: (() -> Unit)?,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,6 +178,7 @@ private fun Header(weather: Forecast?, onOpenSettings: () -> Unit, onStartScreen
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             HeaderButton(stringResource(R.string.settings), onOpenSettings)
             onStartScreensaver?.let { HeaderButton(stringResource(R.string.screensaver), it) }
+            onOpenAppStore?.let { HeaderButton(stringResource(R.string.app_store), it) }
         }
         Weather(weather)
         Clock()

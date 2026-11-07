@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             val weather by viewModel.weather.collectAsStateWithLifecycle()
+            val appStore by viewModel.appStore.collectAsStateWithLifecycle()
             LauncherTheme {
                 HomeScreen(
                     state = state,
@@ -96,6 +97,8 @@ class MainActivity : ComponentActivity() {
                     } else {
                         null
                     },
+                    appStore = appStore?.app,
+                    onOpenAppStore = { appStore?.let { startSafely(Intent(it.intent)) } },
                 )
             }
         }

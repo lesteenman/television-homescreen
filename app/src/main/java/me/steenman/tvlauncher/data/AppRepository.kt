@@ -10,6 +10,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.steenman.tvlauncher.AppStore
+import me.steenman.tvlauncher.R
 import java.util.concurrent.ConcurrentHashMap
 
 /** A launchable TV app as shown on the home screen. */
@@ -24,6 +26,9 @@ data class LauncherApp(
     val key: String get() = component.flattenToString()
     val packageName: String get() = component.packageName
 }
+
+/** The app store's tile: how it looks, and the intent that opens it (see [AppStore]). */
+data class AppStoreTile(val app: LauncherApp, val intent: Intent)
 
 /** Lists every activity that resolves MAIN + LEANBACK_LAUNCHER, except this launcher. */
 class AppRepository(private val context: Context) {
@@ -49,9 +54,36 @@ class AppRepository(private val context: Context) {
             .sortedBy { it.label.lowercase() }
     }
 
+    /**
+     * The app store's tile, or null when no store can be opened. Shown like an app, with the
+     * banner of the activity the store intent resolves to, or just a label when that's unknown.
+     */
+    suspend fun loadAppStore(): AppStoreTile? = withContext(Dispatchers.IO) {
+        val intent = AppStore.intent(pm)
+        if (intent == null) {
+            storeCache = null
+            return@withContext null
+        }
+        val info = pm.resolveActivity(intent, PackageManager.ResolveInfoFlags.of(0))?.activityInfo
+        val component = info?.let { ComponentName(it.packageName, it.name) }
+            ?: ComponentName(AppStore.PLAY_STORE, "")
+        // Reused while it resolves to the same activity, so returning home doesn't recompose it.
+        storeCache?.takeIf { it.app.component == component }?.let { return@withContext it }
+        val app = if (info != null) {
+            load(component, info)
+        } else {
+            LauncherApp(component, context.getString(R.string.app_store), banner = null, icon = null)
+        }
+        AppStoreTile(app, intent).also { storeCache = it }
+    }
+
+    @Volatile
+    private var storeCache: AppStoreTile? = null
+
     /** Drops cached entries for [packageName] so the next [loadApps] reloads them. */
     fun invalidate(packageName: String) {
         cache.keys.removeAll { it.packageName == packageName }
+        if (storeCache?.app?.packageName == packageName) storeCache = null
     }
 
     private fun load(component: ComponentName, info: ActivityInfo): LauncherApp {

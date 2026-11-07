@@ -57,6 +57,9 @@ fun HomeScreen(
     onMoveFavorite: (LauncherApp, Int) -> Unit,
     /** Null when this device has no way to start the screensaver; the button is then hidden. */
     onStartScreensaver: (() -> Unit)? = null,
+    /** The store's tile at the end of All apps; null when no store can be opened on this device. */
+    appStore: LauncherApp? = null,
+    onOpenAppStore: () -> Unit = {},
 ) {
     val gridState = rememberLazyGridState()
     val initialFocus = remember { FocusRequester() }
@@ -114,13 +117,22 @@ fun HomeScreen(
             }
 
             fullWidth("apps-title") { SectionTitle(stringResource(R.string.all_apps)) }
+            // The store always comes last, in its own tile, rather than somewhere in the
+            // alphabetical list (and on some TVs it isn't in the list at all).
+            val allApps = appStore?.let { store -> state.apps.filterNot { it.packageName == store.packageName } }
+                ?: state.apps
             appTiles(
                 prefix = "app",
-                apps = state.apps,
+                apps = allApps,
                 focusFirst = if (state.favorites.isEmpty() && state.showRows.isEmpty()) initialFocus else null,
                 onLaunch = onLaunch,
                 onMenu = { menuFor = it },
             )
+            appStore?.let { store ->
+                item(key = "app-store") {
+                    AppCard(app = store, onClick = onOpenAppStore, onLongClick = {})
+                }
+            }
         }
     }
 

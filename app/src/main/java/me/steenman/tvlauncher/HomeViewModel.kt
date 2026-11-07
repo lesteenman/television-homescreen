@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import me.steenman.tvlauncher.data.AppRepository
+import me.steenman.tvlauncher.data.AppStoreTile
 import me.steenman.tvlauncher.data.FavoritesStore
 import me.steenman.tvlauncher.data.LauncherApp
 import me.steenman.tvlauncher.data.shows.Show
@@ -114,8 +115,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val _appStore = MutableStateFlow<AppStoreTile?>(null)
+
+    /** The store's tile, or null when no store can be opened on this device. */
+    val appStore: StateFlow<AppStoreTile?> = _appStore.asStateFlow()
+
     fun refresh() {
         viewModelScope.launch { apps.value = repository.loadApps() }
+        viewModelScope.launch { _appStore.value = repository.loadAppStore() }
         loadArtwork()
     }
 

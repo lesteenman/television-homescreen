@@ -12,7 +12,7 @@ A replacement home screen for a Chromecast with Google TV: no ads and no recomme
 - **Favorites and all apps.** Favorites can be added, removed and reordered with a long press on OK. Apps that have a show row aren't repeated in Favorites.
 - **Weather.** Today and the next four days from [Open-Meteo](https://open-meteo.com/), refreshed every 30 minutes and cached for offline use.
 - **Screensaver.** The header's Screensaver button, or BACK on the home screen, starts the normal Ambient screensaver.
-- **Play Store.** A Play Store tile at the end of All apps opens the store to install apps. Google TV doesn't list the store among the TV apps, so it would otherwise only be reachable from the stock home screen.
+- **Play Store.** The Play Store always has its own tile at the end of All apps, instead of somewhere in the alphabetical list.
 - **Fast on old hardware.** No live shaders; the background gradient is pre-rendered.
 
 ## How it replaces the stock home screen

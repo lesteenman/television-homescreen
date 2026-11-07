@@ -1,9 +1,6 @@
 ## Context
 
-`AppRepository` lists every activity that resolves MAIN + LEANBACK_LAUNCHER. The Play Store (`com.android.vending`) isn't in that list on either TV, so on Google TV it apparently has no such entry. The stock launcher opens it from its Apps tab instead, and our accessibility redirect hides that screen.
-
-Not yet checked on a TV: which activities `com.android.vending` exports there. To check:
-`adb shell cmd package query-activities -a android.intent.action.MAIN --components com.android.vending`.
+`AppRepository` lists every activity that resolves MAIN + LEANBACK_LAUNCHER. We thought the Play Store wasn't in that list, but on the kitchen TV (checked 2026-11-07) it is: `com.android.vending/com.google.android.finsky.tvmainactivity.TvMainActivity` answers LEANBACK_LAUNCHER and APP_MARKET, and shows as "Google Play Store" in the middle of All apps. Not yet checked on the living room Streamer.
 
 ## Goals / Non-Goals
 
@@ -28,11 +25,11 @@ Not yet checked on a TV: which activities `com.android.vending` exports there. T
 The manifest's `<queries>` only covered LEANBACK_LAUNCHER intents and the sleep action, so the Play Store's other activities were invisible to us. Added `<package android:name="com.android.vending"/>` and an intent for MAIN + APP_MARKET.
 
 ### D3: Its own tile at the end of All apps
-- Decided 2026-11-06 (Erik): not in the header; a tile below all apps.
+- Decided 2026-11-06 (Erik): not in the header; its own tile below all apps.
 - The tile uses the banner, icon and label of the activity the store intent resolves to, like any app, or the label "Play Store" when that's unknown (a selector the system can't resolve to one activity).
 - Resolved on every resume with the app list, so it appears after a store is installed or enabled. Cached while it resolves to the same activity.
 - Long press does nothing: the store isn't in the app list, so it couldn't be shown as a favorite.
-- Left out if the store does appear in All apps on some device, so it isn't shown twice.
+- Always shown when a store resolves, and the store's package is then left out of the alphabetical All apps list so it isn't shown twice (decided 2026-11-07). Favorites are unaffected.
 
 ## Risks / Trade-offs
 

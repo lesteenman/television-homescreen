@@ -1,10 +1,10 @@
 ## Why
 
-There is no way to install new apps from our launcher. The stock Google TV home screen reaches the Play Store through its own Apps tab, and the Play Store has no entry of its own among the TV apps, so it never shows up under All apps. Since the stock home screen is always redirected to ours, the store is unreachable without adb.
+We couldn't find a way to install new apps from our launcher. On the kitchen TV the Play Store turned out to be in All apps after all, as "Google Play Store" in the middle of the alphabetical list, where it's easy to miss. Whether it's listed at all depends on the device, since the store's TV entry isn't always a LEANBACK_LAUNCHER activity.
 
 ## What Changes
 
-- A **Play Store** tile at the end of All apps, with the store's own banner where it has one.
+- A **Play Store** tile always at the end of All apps, with the store's own banner where it has one. The store is taken out of the alphabetical list.
 - It opens the Play Store through the first of several intents that resolves, and is left out when none does.
 - A `<queries>` entry so the launcher can see the Play Store package and other app stores.
 

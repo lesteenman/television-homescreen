@@ -6,10 +6,10 @@ import android.content.pm.PackageManager
 import android.net.Uri
 
 /**
- * Opens the Play Store so new apps can be installed. On Google TV the store has no
- * MAIN + LEANBACK_LAUNCHER entry (the stock launcher reaches it through its own Apps tab), so it
- * never appears among the apps. This tries the store's launcher entries first, then the generic
- * "app market" intent, then a Play Store search link.
+ * Opens the Play Store so new apps can be installed. Whether the store has a MAIN +
+ * LEANBACK_LAUNCHER entry differs per device (the kitchen Chromecast HD has one), so this tries
+ * the store's launcher entries first, then the generic "app market" intent, then a Play Store
+ * search link.
  */
 object AppStore {
     const val PLAY_STORE = "com.android.vending"

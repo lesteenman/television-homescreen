@@ -117,17 +117,18 @@ fun HomeScreen(
             }
 
             fullWidth("apps-title") { SectionTitle(stringResource(R.string.all_apps)) }
+            // The store always comes last, in its own tile, rather than somewhere in the
+            // alphabetical list (and on some TVs it isn't in the list at all).
+            val allApps = appStore?.let { store -> state.apps.filterNot { it.packageName == store.packageName } }
+                ?: state.apps
             appTiles(
                 prefix = "app",
-                apps = state.apps,
+                apps = allApps,
                 focusFirst = if (state.favorites.isEmpty() && state.showRows.isEmpty()) initialFocus else null,
                 onLaunch = onLaunch,
                 onMenu = { menuFor = it },
             )
-
-            // Google TV doesn't list the store among its TV apps, so it gets its own tile here
-            // (unless a device does list it, which would show it twice).
-            appStore?.takeIf { store -> state.apps.none { it.packageName == store.packageName } }?.let { store ->
+            appStore?.let { store ->
                 item(key = "app-store") {
                     AppCard(app = store, onClick = onOpenAppStore, onLongClick = {})
                 }

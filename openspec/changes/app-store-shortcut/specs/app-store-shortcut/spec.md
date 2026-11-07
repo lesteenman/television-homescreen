@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: App store tile
-The home screen SHALL show a Play Store tile after the last tile of All apps when an app store can be opened on the device. Selecting it SHALL open the store.
+The home screen SHALL show a Play Store tile after the last tile of All apps when an app store can be opened on the device, and SHALL leave the store's package out of the alphabetical All apps list. Selecting it SHALL open the store.
 
 #### Scenario: Open the store
 - **WHEN** the user selects the Play Store tile

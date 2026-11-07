@@ -7,6 +7,6 @@
 
 ## 2. Verify
 
-- [ ] 2.1 Kitchen TV: note which fallback resolves; the tile shows the store's banner and opens the Play Store
+- [ ] 2.1 Kitchen TV: step 1 (LEANBACK_LAUNCHER) resolves, checked 2026-11-07; the tile shows the store's banner and opens the Play Store
 - [ ] 2.2 Kitchen TV: install an app from it; it appears under All apps
 - [ ] 2.3 Living room TV: same as 2.1

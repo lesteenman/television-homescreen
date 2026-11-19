@@ -5,6 +5,11 @@
       "app": "com.netflix.ninja",
       "shows": [
         {
+          "title": "Pokémon: Indigo League",
+          "link": "https://www.netflix.com/title/70297439",
+          "image": "https://image.tmdb.org/t/p/w780/yYpQV25I7XB6S0POJOScPjxYWV5.jpg"
+        },
+        {
           "title": "Peter Rabbit",
           "link": "https://www.netflix.com/title/81006960",
           "image": "https://image.tmdb.org/t/p/w780/gfGZGimQn06kIT4AmtbClwXepT6.jpg"
